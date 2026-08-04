@@ -1,0 +1,92 @@
+/* ── Le Prestige — Design Tokens (Warm Luxury Palette) ────────────── */
+
+:root {
+  /* Main Backgrounds */
+  --lp-bg: #F8F4EE;
+  --lp-bg-alt: #F3EEE7;
+  --lp-white: #FFFFFF;
+
+  /* Terracotta Accents */
+  --lp-accent: #C45A37;
+  --lp-accent-hover: #B24F30;
+  --lp-accent-dark: #A5472A;
+
+  /* Luxury Gold & Champagne */
+  --lp-gold: #C7A56B;
+  --lp-champagne: #D8B98A;
+  --lp-soft-gold: #E6CFA7;
+  --lp-star: #F4B73E;
+
+  /* Typography */
+  --lp-primary: #262626;
+  --lp-heading: #262626;
+  --lp-body: #575757;
+  --lp-muted: #8C8C8C;
+
+  /* Borders */
+  --lp-border: #E5DED5;
+  --lp-border-light: #EFE8DF;
+
+  /* Footers & Dark Sections */
+  --lp-footer: #262626;
+  --lp-footer-deep: #1C1C1C;
+
+  /* Feedback */
+  --lp-success: #4CAF50;
+  --lp-error: #D9534F;
+
+  /* Typography Fonts */
+  --font-heading: 'Cormorant Garamond', serif;
+  --font-subheading: 'Playfair Display', serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-numbers: 'Playfair Display', serif;
+
+  /* Spacing (8px system) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 56px;
+  --space-11: 64px;
+  --space-12: 80px;
+  --space-13: 96px;
+  --space-14: 120px;
+
+  /* Container */
+  --container-max: 1280px;
+  --container-padding: 40px;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 0.25s;
+  --duration-normal: 0.35s;
+  --duration-slow: 0.5s;
+
+  /* Z-index layers */
+  --z-loader: 9999;
+  --z-navbar: 100;
+  --z-scroll-progress: 99;
+  --z-modal: 200;
+  --z-hero-bg: 1;
+  --z-hero-image: 2;
+  --z-hero-overlay: 3;
+  --z-hero-content: 4;
+
+  /* Shadows */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 20px 60px rgba(0, 0, 0, 0.08);
+  --shadow-hero: 0 30px 80px rgba(0, 0, 0, 0.12);
+  --shadow-accent: 0 10px 30px rgba(196, 90, 55, 0.12);
+}

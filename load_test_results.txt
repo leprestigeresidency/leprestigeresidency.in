@@ -1,0 +1,13 @@
+
+=======================================
+         LOAD TEST RUN RESULTS         
+=======================================
+Total Simulated Users    : 2500
+Successful Requests      : 2500
+Failed Requests          : 0
+Total Time Taken         : 1.92 seconds
+Throughput               : 1302.08 req/sec
+Average Response Time    : 147.01 ms
+95th Percentile Latency  : 225.00 ms
+99th Percentile Latency  : 266.00 ms
+=======================================

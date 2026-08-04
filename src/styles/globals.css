@@ -1,0 +1,120 @@
+/* ── Le Prestige — Global Styles ────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background: var(--lp-bg);
+  color: var(--lp-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--lp-accent);
+  color: var(--lp-white);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lp-border);
+  border-radius: 3px;
+}
+
+/* ── Container ──────────────────────────────────────────────────── */
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+/* ── Section spacing ────────────────────────────────────────────── */
+
+.section {
+  padding: var(--space-14) var(--container-padding);
+}
+
+/* ── Responsive utilities ───────────────────────────────────────── */
+
+.hidden-mobile {}
+.show-mobile { display: none !important; }
+
+@media (max-width: 1024px) {
+  :root {
+    --container-padding: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --container-padding: 24px;
+    --space-14: 80px;
+  }
+
+  .hidden-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+  .two-col { grid-template-columns: 1fr !important; gap: 48px !important; }
+  .footer-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .gallery-grid { columns: 2 !important; }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --container-padding: 20px;
+    --space-14: 64px;
+  }
+
+  .gallery-grid { columns: 1 !important; }
+}
