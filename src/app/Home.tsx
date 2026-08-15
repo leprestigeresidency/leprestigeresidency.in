@@ -9,19 +9,23 @@ import Reviews from "@/components/sections/Reviews"
 import Branches from "@/components/sections/Branches"
 import Location from "@/components/sections/Location"
 import CTA from "@/components/sections/CTA"
+import Container from "@/components/layout/Container"
 
 export default function Home() {
   return (
-    <main>
-      <Hero />
-      <Experience />
-      <FeaturedRooms />
-      <Amenities />
-      <Gallery />
-      <Reviews />
-      <Branches />
-      <Location />
-      <CTA />
+    <main className="w-full bg-[#F8F4EE] min-h-screen">
+      <Container>
+        <Hero />
+        <Experience />
+        <FeaturedRooms />
+        <Amenities />
+        <Gallery />
+        <Reviews />
+        <Branches />
+        <Location />
+        <CTA />
+      </Container>
     </main>
-  )
+  );
 }
+

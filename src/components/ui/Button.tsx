@@ -3,12 +3,14 @@
 import { motion } from "framer-motion"
 import { buttonTap } from "@/constants/animation"
 import { cn } from "@/utils/helpers"
+import { Link } from "react-router-dom"
 import type { ReactNode, MouseEvent } from "react"
 
 interface ButtonProps {
   children: ReactNode
   variant?: "primary" | "outline" | "ghost" | "dark" | "outline-light"
   href?: string
+  to?: string
   onClick?: (e: MouseEvent) => void
   className?: string
   size?: "sm" | "md" | "lg"
@@ -40,6 +42,7 @@ export default function Button({
   children,
   variant = "primary",
   href,
+  to,
   onClick,
   className = "",
   size = "md",
@@ -61,6 +64,20 @@ export default function Button({
       >
         {children}
       </motion.a>
+    )
+  }
+
+  if (to) {
+    const MotionLink = motion(Link)
+    return (
+      <MotionLink
+        to={to}
+        className={classes}
+        style={inlineStyle}
+        whileTap={buttonTap}
+      >
+        {children}
+      </MotionLink>
     )
   }
 

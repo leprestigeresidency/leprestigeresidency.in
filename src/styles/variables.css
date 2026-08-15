@@ -1,4 +1,4 @@
-/* ── Le Prestige — Design Tokens (Warm Luxury Palette) ────────────── */
+/* ── Le Prestige — Design Tokens (Warm Luxury Palette) ───────────────────────────────────── */
 
 :root {
   /* Main Backgrounds */
@@ -58,8 +58,31 @@
   --space-14: 120px;
 
   /* Container */
-  --container-max: 1280px;
-  --container-padding: 40px;
+  --container-max: 1280px; /* existing */
+  --container-padding: 40px; /* existing */
+
+  /* New Responsive Breakpoints */
+  --bp-xs: 320px;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1440px;
+  --bp-2xl: 1920px;
+  --bp-3xl: 2560px;
+
+  /* Fluid Typography */
+  --hero-h1: clamp(2.5rem, 6vw, 6rem);
+  --section-h2: clamp(2rem, 4vw, 4rem);
+  --body: clamp(0.95rem, 1.2vw, 1.1rem);
+  --btn: clamp(0.9rem, 1vw, 1rem);
+
+  /* Max width for desktop content */
+  --max-width-desktop: 1440px;
+
+  /* Responsive paddings */
+  --padding-mobile: clamp(16px, 2vw, 24px);
+  --padding-tablet: clamp(24px, 3vw, 40px);
+  --padding-desktop: clamp(32px, 4vw, 64px);
 
   /* Border radius */
   --radius-sm: 8px;

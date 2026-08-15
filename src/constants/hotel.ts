@@ -9,8 +9,8 @@ export const HOTEL = {
     "Experience premium comfort in the heart of Puducherry.",
   phone: "+91 96777 51329",
   phoneRaw: "919677751329",
-  email: "info@leprestigehotel.com",
-  website: "www.leprestigehotel.com",
+  email: "reservations@leprestigeresidency.in",
+  website: "www.leprestigeresidency.in",
   status: "Open 24 Hours",
 
   address: {

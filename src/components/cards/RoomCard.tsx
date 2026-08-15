@@ -141,10 +141,10 @@ export default function RoomCard({ room, pricing }: RoomCardProps) {
               </p>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <Button href="#" variant="outline" size="sm">
+              <Button to="/rooms" variant="outline" size="sm">
                 View
               </Button>
-              <Button href="#" variant="primary" size="sm">
+              <Button to="/rooms" variant="primary" size="sm">
                 Reserve
               </Button>
             </div>

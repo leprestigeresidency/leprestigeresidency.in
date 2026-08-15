@@ -75,9 +75,24 @@ button {
 /* ── Container ──────────────────────────────────────────────────── */
 
 .container {
-  max-width: var(--container-max);
+  max-width: var(--max-width-desktop);
   margin: 0 auto;
-  padding: 0 var(--container-padding);
+  padding-left: var(--padding-mobile);
+  padding-right: var(--padding-mobile);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: var(--padding-tablet);
+    padding-right: var(--padding-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: var(--padding-desktop);
+    padding-right: var(--padding-desktop);
+  }
 }
 
 /* ── Section spacing ────────────────────────────────────────────── */

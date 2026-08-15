@@ -71,10 +71,10 @@ export default function CTA() {
               flexWrap: "wrap",
             }}
           >
-            <Button href="#" variant="primary" size="lg">
+            <Button to="/rooms" variant="primary" size="lg">
               Reserve Now
             </Button>
-            <Button href="#rooms" variant="outline-light" size="lg">
+            <Button to="/rooms" variant="outline-light" size="lg">
               Explore Rooms
             </Button>
           </motion.div>

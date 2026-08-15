@@ -21,10 +21,10 @@ export const BRANCHES: Branch[] = [
   },
   {
     city: "Tindivanam",
-    status: "coming-soon",
-    tag: "Coming Soon",
+    status: "active",
+    tag: "Second Branch",
     description:
-      "A new Le Prestige is arriving in Tindivanam — bringing the same quiet luxury to a new destination soon.",
+      "Our second branch in Tindivanam — delivering the same quiet luxury and premium stay experience.",
   },
 ]
 

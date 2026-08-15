@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import MagneticButton from "@/components/animations/MagneticButton"
+import { Link } from "react-router-dom"
 
 export default function HeroButtons() {
   return (
@@ -17,8 +18,8 @@ export default function HeroButtons() {
         justifyContent: "center",
       }}
     >
-      <a
-        href="#reservation"
+      <Link
+        to="/rooms"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -44,10 +45,10 @@ export default function HeroButtons() {
         }}
       >
         Reserve Now
-      </a>
+      </Link>
 
-      <a
-        href="#rooms"
+      <Link
+        to="/rooms"
         style={{
           display: "inline-flex",
           alignItems: "center",
@@ -76,7 +77,7 @@ export default function HeroButtons() {
         }}
       >
         Explore Rooms
-      </a>
+      </Link>
     </motion.div>
   )
 }

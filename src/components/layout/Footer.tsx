@@ -2,6 +2,7 @@
 
 import { HOTEL, FOOTER_LINKS, LEGAL_LINKS } from "@/constants/hotel"
 import FadeUp from "@/components/animations/FadeUp"
+import { Link } from "react-router-dom"
 
 export default function Footer() {
   return (
@@ -104,10 +105,16 @@ export default function Footer() {
               >
                 Quick Links
               </p>
-              {FOOTER_LINKS.map((link) => (
-                <a
+              {FOOTER_LINKS.map((link) => {
+                const isRooms = link === "Rooms" || link === "Reservation";
+                const isAbout = link === "About";
+                const isExplore = (link as string) === "Explore Le Prestige" || (link as string) === "Explore";
+                const targetPath = isRooms ? "/rooms" : isAbout ? "/about" : isExplore ? "/explore" : `/#${link.toLowerCase().replace(/\\s+/g, "-")}`;
+                
+                return (
+                <Link
                   key={link}
-                  href="#"
+                  to={targetPath}
                   style={{
                     display: "block",
                     fontFamily: "var(--font-body)",
@@ -125,8 +132,8 @@ export default function Footer() {
                   }
                 >
                   {link}
-                </a>
-              ))}
+                </Link>
+              )})}
             </div>
 
             {/* Contact */}
@@ -209,7 +216,7 @@ export default function Footer() {
           >
             © {new Date().getFullYear()} {HOTEL.name}. All rights reserved.
           </p>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
             {LEGAL_LINKS.map((link) => (
               <a
                 key={link}

@@ -1,5 +1,3 @@
-// ── Le Prestige — Location Section ──────────────────────────────
-
 import { MapPin, Phone, Clock, Car, Hotel } from "lucide-react"
 import { HOTEL, GOOGLE_MAPS_LINK, GOOGLE_MAPS_EMBED } from "@/constants/hotel"
 import SectionHeading from "@/components/common/SectionHeading"
@@ -7,15 +5,29 @@ import Button from "@/components/ui/Button"
 import FadeUp from "@/components/animations/FadeUp"
 import Reveal from "@/components/animations/Reveal"
 
-const locationFeatures = [
-  { icon: MapPin, label: HOTEL.address.short },
-  { icon: Phone, label: HOTEL.phone },
-  { icon: Clock, label: HOTEL.status },
-  { icon: Car, label: "Easy Parking" },
-  { icon: Hotel, label: "Boutique Hotel" },
-]
+interface LocationProps {
+  address?: string
+  phone?: string
+  mapEmbedUrl?: string
+  mapLinkUrl?: string
+  hotelName?: string
+}
 
-export default function Location() {
+export default function Location({
+  address = HOTEL.address.short,
+  phone = HOTEL.phone,
+  mapEmbedUrl = GOOGLE_MAPS_EMBED,
+  mapLinkUrl = GOOGLE_MAPS_LINK,
+  hotelName = HOTEL.name,
+}: LocationProps) {
+  const locationFeatures = [
+    { icon: MapPin, label: address },
+    { icon: Phone, label: phone },
+    { icon: Clock, label: HOTEL.status },
+    { icon: Car, label: "Easy Parking" },
+    { icon: Hotel, label: "Boutique Hotel" },
+  ]
+
   return (
     <section
       id="location"
@@ -46,14 +58,14 @@ export default function Location() {
             }}
           >
             <iframe
-              src={GOOGLE_MAPS_EMBED}
+              src={mapEmbedUrl}
               width="100%"
               height="100%"
               style={{ border: 0, display: "block" }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Le Prestige Boutique Hotel Location"
+              title={`${hotelName} Location`}
             />
           </div>
         </Reveal>
@@ -76,7 +88,7 @@ export default function Location() {
                   marginBottom: 16,
                 }}
               >
-                {HOTEL.name}
+                {hotelName}
               </p>
               <div
                 style={{
@@ -118,13 +130,13 @@ export default function Location() {
           <FadeUp delay={0.2}>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <Button
-                href={GOOGLE_MAPS_LINK}
+                href={mapLinkUrl}
                 variant="dark"
               >
                 Get Directions →
               </Button>
               <Button
-                href={`tel:${HOTEL.phoneRaw}`}
+                href={`tel:${phone.replace(/\s+/g, '')}`}
                 variant="outline"
               >
                 Call Now
