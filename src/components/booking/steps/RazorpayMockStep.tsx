@@ -168,34 +168,20 @@ export default function RazorpayMockStep({ onSuccess, onCancel }: RazorpayStepPr
           )}
 
           <div className="mb-6">
-            <h3 className="text-[var(--lp-heading)] font-semibold text-lg mb-4">Choose Payment Method</h3>
+            <h3 className="text-[var(--lp-heading)] font-semibold text-lg mb-4">Complete Your Reservation</h3>
             
             <div className="space-y-3">
               <button 
                 onClick={() => executePayment("RAZORPAY_SDK")} 
                 disabled={processing} 
-                className="w-full flex items-center gap-4 p-4 rounded-xl border border-[var(--lp-border)] hover:border-[#3399cc] hover:bg-[#3399cc]/5 transition-all text-left group disabled:opacity-50"
+                className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 transition-all text-left group disabled:opacity-50"
               >
-                <div className="w-8 h-8 rounded-full bg-[#3399cc]/10 text-[#3399cc] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <CreditCard size={16} />
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <CreditCard size={20} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm text-[var(--lp-heading)]">Razorpay Online Gateway</p>
-                  <p className="text-xs text-[var(--lp-muted)]">Credit/Debit Card, Netbanking, Wallets</p>
-                </div>
-              </button>
-              
-              <button 
-                onClick={() => executePayment("SIMULATED")} 
-                disabled={processing} 
-                className="w-full flex items-center gap-4 p-4 rounded-xl border border-[var(--lp-border)] hover:border-[#3399cc] hover:bg-[#3399cc]/5 transition-all text-left group disabled:opacity-50"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#3399cc]/10 text-[#3399cc] flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Smartphone size={16} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-sm text-[var(--lp-heading)]">UPI / Express Checkout</p>
-                  <p className="text-xs text-[var(--lp-muted)]">Instant backend confirmation & verification</p>
+                  <p className="font-bold text-sm text-emerald-900">Pay via Secure Razorpay</p>
+                  <p className="text-xs text-emerald-700/80 font-medium">Verify with live test gateway</p>
                 </div>
               </button>
             </div>

@@ -17,9 +17,9 @@ export default function AdminGuard({ children }: AdminGuardProps) {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Auto grant admin if logged in user is admin email
+  // Auto grant admin if logged in user is the official admin email
   useEffect(() => {
-    if (user?.email && (user.email.includes("admin") || user.email.includes("owner") || user.email === "leprestigeresidency@gmail.com" || user.email === "admin@leprestige.com")) {
+    if (user?.email === "leprestigeresidency@gmail.com") {
       setIsAdminAuthenticated(true)
       sessionStorage.setItem("lp_admin_session", "authenticated")
     }
@@ -30,13 +30,13 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     setError(null)
     setLoading(true)
 
-    // Verify Admin Passcode or Admin Email
+    // Strictly Verify Admin Email AND Passcode
     setTimeout(() => {
-      if (passcode === "leprestigeresidency" || passcode === "admin123" || passcode === "owner2026" || passcode === "admin") {
+      if (emailInput === "leprestigeresidency@gmail.com" && passcode === "leprestigeresidency") {
         setIsAdminAuthenticated(true)
         sessionStorage.setItem("lp_admin_session", "authenticated")
       } else {
-        setError("Invalid Owner / Admin Passcode. Access Denied.")
+        setError("Invalid Admin Email or Secret Passcode. Access Denied.")
       }
       setLoading(false)
     }, 600)

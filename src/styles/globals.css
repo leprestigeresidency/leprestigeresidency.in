@@ -1,8 +1,9 @@
 /* ── Le Prestige — Global Styles ────────────────────────────────── */
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
 html {
   scroll-behavior: smooth;
@@ -50,11 +51,12 @@ a {
   color: inherit;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
+  button {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    background-color: transparent;
+  }
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────── */

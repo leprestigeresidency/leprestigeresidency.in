@@ -1,0 +1,4 @@
+/tourist /index.html 200
+/tourist/* /index.html 200
+/business /index.html 200
+/business/* /index.html 200

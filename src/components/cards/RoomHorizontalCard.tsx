@@ -14,6 +14,7 @@ interface RoomHorizontalCardProps {
     weekdays: number
     weekends: number
   }
+  available?: boolean
   reverse?: boolean
   onBook: (type: RoomType) => void
   onViewDetails?: (type: RoomType) => void
@@ -29,6 +30,7 @@ export default function RoomHorizontalCard({
   badge,
   features,
   pricing,
+  available = true,
   reverse = false,
   onBook,
   onViewDetails,
@@ -139,10 +141,11 @@ export default function RoomHorizontalCard({
               </button>
               <button 
                 onClick={() => onBook(type)}
-                style={{ backgroundColor: "#8B4513" }}
-                className="px-8 py-4 rounded-md text-[13px] tracking-[0.16em] uppercase font-bold transition-all duration-300 text-white hover:bg-[#5C2E0C] hover:shadow-[0_10px_20px_rgba(139,69,19,0.3)] flex-1 flex justify-center items-center gap-2 cursor-pointer"
+                disabled={!available}
+                style={{ backgroundColor: available ? "#8B4513" : "#666" }}
+                className={`px-8 py-4 rounded-md text-[13px] tracking-[0.16em] uppercase font-bold transition-all duration-300 ${available ? 'text-white hover:bg-[#5C2E0C] hover:shadow-[0_10px_20px_rgba(139,69,19,0.3)] cursor-pointer' : 'text-gray-300 cursor-not-allowed'} flex-1 flex justify-center items-center gap-2`}
               >
-                Book {type} Room
+                {available ? `Book ${type} Room` : "Occupied"}
               </button>
             </div>
 

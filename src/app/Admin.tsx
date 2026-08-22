@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { LayoutDashboard, CalendarCheck, BedDouble, MessageSquare, IndianRupee, TrendingUp, Users, Search, RefreshCw, Shield, MapPin, Building2, Globe, LogOut, Trash2 } from "lucide-react"
+import { LayoutDashboard, CalendarCheck, BedDouble, MessageSquare, IndianRupee, TrendingUp, Users, Search, RefreshCw, Shield, MapPin, Building2, Globe, LogOut, Trash2, BellRing } from "lucide-react"
 import { AdminService, BookingRecord, RoomRecord, InquiryRecord } from "@/services/admin.service"
+import { db } from "@/firebase/config"
+import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore"
 
 export type BranchFilter = "ALL" | "Pondicherry" | "Tindivanam"
 
@@ -14,10 +16,69 @@ export default function Admin() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState<string>("ALL")
+  const [newBookingAlert, setNewBookingAlert] = useState<BookingRecord | null>(null)
+  const isFirstLoad = useRef(true)
 
   useEffect(() => {
     document.title = "Admin Portal | Le Prestige Residency"
-    loadAdminData()
+    
+    if (!db) return
+    setLoading(true)
+
+    // Listen to Bookings real-time
+    const qBookings = query(collection(db, "bookings"), orderBy("createdAt", "desc"), limit(50))
+    const unsubBookings = onSnapshot(qBookings, (snapshot) => {
+      if (!isFirstLoad.current) {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            const addedB = { id: change.doc.id, branch: change.doc.data().branch || "Pondicherry", ...change.doc.data() } as BookingRecord
+            setNewBookingAlert(addedB)
+            setTimeout(() => setNewBookingAlert(null), 8000)
+          }
+        })
+      }
+      
+      const liveBookings = snapshot.docs.map(doc => ({ id: doc.id, branch: doc.data().branch || "Pondicherry", ...doc.data() })) as BookingRecord[]
+      
+      // Merge with local storage mock bookings if any
+      let localBookings: BookingRecord[] = []
+      try {
+        const stored = localStorage.getItem("le_prestige_user_bookings")
+        if (stored) localBookings = JSON.parse(stored)
+      } catch (e) {}
+
+      setBookings([...localBookings, ...liveBookings])
+    })
+
+    // Listen to Rooms real-time
+    const unsubRooms = onSnapshot(collection(db, "rooms"), (snapshot) => {
+      const liveRooms = snapshot.docs.map(doc => ({ id: doc.id, branch: doc.data().branch || "Pondicherry", ...doc.data() })) as RoomRecord[]
+      if (liveRooms.length > 0) {
+        setRooms(liveRooms)
+      } else {
+        // Fallback static rooms if db is completely empty
+        AdminService.getRooms().then(setRooms)
+      }
+    })
+
+    // Listen to Contact Inquiries real-time
+    const unsubInquiries = onSnapshot(collection(db, "contact"), (snapshot) => {
+      const liveInquiries = snapshot.docs.map(doc => ({ id: doc.id, branch: doc.data().branch || "Pondicherry", ...doc.data() })) as InquiryRecord[]
+      setInquiries(liveInquiries)
+      setLoading(false)
+    })
+
+    return () => {
+      unsubBookings()
+      unsubRooms()
+      unsubInquiries()
+    }
+  }, [])
+
+  useEffect(() => {
+    // ensure first load flag clears after initial fetch
+    const timer = setTimeout(() => { isFirstLoad.current = false }, 2000)
+    return () => clearTimeout(timer)
   }, [])
 
   const handleExitAdmin = () => {
@@ -28,21 +89,15 @@ export default function Admin() {
   const handleClearLocalData = () => {
     if (window.confirm("Are you sure you want to clear all locally cached test bookings?")) {
       localStorage.removeItem("le_prestige_user_bookings")
-      loadAdminData()
+      window.location.reload()
     }
   }
 
-  const loadAdminData = async () => {
+  // loadAdminData is not strictly needed for fetch anymore, just for fallback
+  const loadAdminData = () => {
+    // Relying on onSnapshot, just blink the button state
     setLoading(true)
-    const [bData, rData, iData] = await Promise.all([
-      AdminService.getBookings(),
-      AdminService.getRooms(),
-      AdminService.getInquiries(),
-    ])
-    setBookings(bData)
-    setRooms(rData)
-    setInquiries(iData)
-    setLoading(false)
+    setTimeout(() => setLoading(false), 500)
   }
 
   const handleStatusChange = async (bookingId: string, newStatus: BookingRecord["status"]) => {
@@ -57,21 +112,21 @@ export default function Admin() {
 
   // Branch-Filtered Datasets
   const branchBookings = bookings.filter((b) => 
-    selectedBranch === "ALL" || b.branch.toLowerCase().includes(selectedBranch.toLowerCase())
+    selectedBranch === "ALL" || (b.branch || "").toLowerCase().includes(selectedBranch.toLowerCase())
   )
   const branchRooms = rooms.filter((r) => 
-    selectedBranch === "ALL" || r.branch.toLowerCase().includes(selectedBranch.toLowerCase())
+    selectedBranch === "ALL" || (r.branch || "").toLowerCase().includes(selectedBranch.toLowerCase())
   )
   const branchInquiries = inquiries.filter((inq) => 
-    selectedBranch === "ALL" || inq.branch.toLowerCase().includes(selectedBranch.toLowerCase())
+    selectedBranch === "ALL" || (inq.branch || "").toLowerCase().includes(selectedBranch.toLowerCase())
   )
 
   // Search & Status Filtered Bookings
   const filteredBookings = branchBookings.filter((b) => {
-    const matchesSearch = b.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          b.guestDetails.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          b.roomType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          b.branch.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = (b.referenceNumber || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (b.guestDetails?.fullName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (b.roomType || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (b.branch || "").toLowerCase().includes(searchQuery.toLowerCase())
     const matchesFilter = filterStatus === "ALL" || b.status === filterStatus
     return matchesSearch && matchesFilter
   })
@@ -81,8 +136,135 @@ export default function Admin() {
   const occupiedRooms = branchRooms.filter((r) => r.status === "OCCUPIED").length
   const occupancyRate = branchRooms.length ? Math.round((occupiedRooms / branchRooms.length) * 100) : 0
 
+  // Most Booked Room Calculation
+  const roomCounts = branchBookings.reduce((acc, b) => {
+    acc[b.roomType] = (acc[b.roomType] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const mostBookedRoom = Object.keys(roomCounts).length > 0 
+    ? Object.keys(roomCounts).reduce((a, b) => roomCounts[a] > roomCounts[b] ? a : b) 
+    : "N/A"
+
+  const handleExportCSV = () => {
+    let dataToExport: any[] = []
+    let filename = ""
+
+    if (activeTab === "BOOKINGS" || activeTab === "OVERVIEW") {
+      dataToExport = branchBookings.map(b => ({
+        "Booking ID": b.id,
+        "Reference": b.referenceNumber,
+        "Branch": b.branch,
+        "Guest Name": b.guestDetails.fullName,
+        "Email": b.guestDetails.email,
+        "Phone": b.guestDetails.phone,
+        "Room Type": b.roomType,
+        "Check In": b.checkIn,
+        "Check Out": b.checkOut,
+        "Guests": `${b.adults} Adults, ${b.children} Kids`,
+        "Total Price": b.totalPrice,
+        "Status": b.status,
+        "Payment": b.paymentStatus
+      }))
+      filename = `LePrestige_Bookings_${selectedBranch}.csv`
+    } else if (activeTab === "INQUIRIES") {
+      dataToExport = branchInquiries.map(i => ({
+        "Inquiry ID": i.id,
+        "Branch": i.branch,
+        "Guest Name": i.name,
+        "Email": i.email,
+        "Phone": i.phone || "N/A",
+        "Subject": i.subject || "N/A",
+        "Message": i.message,
+        "Status": i.status
+      }))
+      filename = `LePrestige_Inquiries_${selectedBranch}.csv`
+    } else {
+      alert("Please switch to Bookings or Inquiries tab to export data.")
+      return
+    }
+
+    if (dataToExport.length === 0) {
+      alert("No data available to export.")
+      return
+    }
+
+    // Convert JSON to CSV string
+    const headers = Object.keys(dataToExport[0])
+    const csvRows = [
+      headers.join(","),
+      ...dataToExport.map(row => headers.map(header => `"${String(row[header as keyof typeof row]).replace(/"/g, '""')}"`).join(","))
+    ]
+    const csvString = csvRows.join("\n")
+
+    // Trigger Download
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.setAttribute("download", filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handlePrintInvoice = (b: BookingRecord) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html><head><title>Invoice - ${b.referenceNumber}</title>
+      <style>body { font-family: sans-serif; padding: 40px; color: #111827; } .header { border-bottom: 2px solid #b89758; padding-bottom: 20px; mb-20px; } .flex { display: flex; justify-content: space-between; } .text-right { text-align: right; } table { width: 100%; border-collapse: collapse; margin-top: 30px; } th, td { border: 1px solid #ddd; padding: 12px; text-align: left; } th { background-color: #f8f4ee; }</style></head>
+      <body>
+        <div class="header flex">
+          <div><h1 style="color: #1b4332; margin:0; font-family: serif;">Le Prestige Residency</h1><p style="margin: 5px 0;">Branch: ${b.branch}</p></div>
+          <div class="text-right"><h2 style="margin: 0; color: #111;">TAX INVOICE</h2><p style="margin: 5px 0;"><strong>Ref:</strong> ${b.referenceNumber}</p><p style="margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p></div>
+        </div>
+        <div class="flex" style="margin-top: 30px;">
+          <div><strong style="color:#555">Billed To:</strong><br><br><strong>${b.guestDetails?.fullName || "N/A"}</strong><br>${b.guestDetails?.email || "N/A"}<br>${b.guestDetails?.phone || "N/A"}</div>
+          <div class="text-right"><strong style="color:#555">Stay Details:</strong><br><br><strong>Check-in:</strong> ${b.checkIn}<br><strong>Check-out:</strong> ${b.checkOut}<br><strong>Guests:</strong> ${b.adults} Adults, ${b.children} Children</div>
+        </div>
+        <table>
+          <tr><th>Description</th><th>Type</th><th>Total Amount</th></tr>
+          <tr><td>Room Reservation</td><td>${b.roomType} Room</td><td>Rs. ${(b.totalPrice || 0).toLocaleString()}</td></tr>
+        </table>
+        <p style="margin-top: 15px; font-size: 12px; color: #777;">Transaction ID: ${b.razorpayPaymentId || "SIMULATED / OFFLINE"} <br/>Special Note: ${b.specialRequest || "None"}</p>
+        <p style="margin-top: 50px; text-align: center; font-weight: bold; font-family: serif; font-size: 18px;">Thank you for staying with Le Prestige Residency!</p>
+        <script>window.print(); setTimeout(() => window.close(), 1000);</script>
+      </body></html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <main className="w-full bg-[#F8F4EE] min-h-screen pt-28 pb-20 text-[var(--lp-heading)]">
+      
+      {/* 🔔 New Booking Alert Popup */}
+      <AnimatePresence>
+        {newBookingAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -50, x: "-50%" }}
+            className="fixed top-24 left-1/2 z-[100] bg-[#111827] text-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-700 w-[90%] max-w-md"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center shrink-0">
+                <BellRing size={24} className="animate-bounce" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-green-400 mb-1 uppercase tracking-wider">New Booking Received!</h4>
+                <p className="text-white font-serif text-lg leading-tight mb-1">{newBookingAlert.guestDetails.fullName}</p>
+                <div className="flex flex-col gap-0.5 text-xs text-slate-300">
+                  <span>📍 {newBookingAlert.branch} • {newBookingAlert.roomType} Room</span>
+                  <span>📅 {newBookingAlert.checkIn} to {newBookingAlert.checkOut}</span>
+                  <span className="text-green-300 mt-1 font-semibold">₹{(newBookingAlert.totalPrice || 0).toLocaleString()} Paid</span>
+                </div>
+              </div>
+              <button onClick={() => setNewBookingAlert(null)} className="text-slate-400 hover:text-white">✕</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="container mx-auto px-6 max-w-[1280px]">
         
         {/* Admin Header */}
@@ -94,13 +276,21 @@ export default function Admin() {
             <h1 className="text-3xl md:text-4xl font-medium font-serif">Le Prestige Admin Portal</h1>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3">
+            
+            <button 
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-[var(--lp-border)] hover:bg-[#F3EEE7] text-xs font-bold text-black transition-all shadow-sm cursor-pointer"
+            >
+              <span className="text-lg leading-none">📊</span> Export Data (CSV)
+            </button>
+
             <button 
               onClick={loadAdminData}
               disabled={loading}
               className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl border border-[var(--lp-border)] hover:bg-[#F3EEE7] text-xs font-bold text-black transition-all shadow-sm disabled:opacity-50 cursor-pointer"
             >
-              <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh Data
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Refresh
             </button>
 
             <button 
@@ -115,7 +305,7 @@ export default function Admin() {
               onClick={handleExitAdmin}
               className="flex items-center gap-2 bg-[#E6D7C3] hover:bg-[#D4C3AC] active:scale-95 text-black hover:text-black px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all shadow-md cursor-pointer border-2 border-black"
             >
-              <LogOut size={15} className="text-black" /> Exit Admin Session
+              <LogOut size={15} className="text-black" /> Exit
             </button>
           </div>
         </div>
@@ -261,16 +451,43 @@ export default function Admin() {
               </div>
 
               <div className="bg-white p-6 rounded-2xl border border-[var(--lp-border)] shadow-sm flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-                  <Users size={24} />
+                <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold relative overflow-hidden">
+                  <div className="absolute inset-0 bg-purple-200/50 animate-pulse" />
+                  <BedDouble size={24} className="relative z-10" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-[var(--lp-muted)] font-semibold">Inquiries</p>
-                  <p className="text-2xl font-bold font-serif text-[var(--lp-heading)]">{branchInquiries.length}</p>
+                  <p className="text-xs uppercase tracking-widest text-[var(--lp-muted)] font-semibold">Most Booked</p>
+                  <p className="text-xl font-bold font-serif text-[var(--lp-heading)] truncate max-w-[150px]">{mostBookedRoom}</p>
                 </div>
               </div>
 
             </div>
+
+            {/* 📊 Graphical Breakdown section */}
+            {branchBookings.length > 0 && (
+              <div className="bg-white p-6 rounded-2xl border border-[var(--lp-border)] shadow-sm mb-8">
+                <h3 className="font-serif text-xl font-semibold mb-6">Booking Distribution by Room Type</h3>
+                <div className="space-y-4">
+                  {Object.entries(roomCounts).sort((a,b) => b[1]-a[1]).map(([room, count]) => {
+                    const percentage = Math.round((count / branchBookings.length) * 100)
+                    return (
+                      <div key={room} className="flex items-center gap-4">
+                        <div className="w-24 shrink-0 text-sm font-semibold truncate" title={room}>{room}</div>
+                        <div className="flex-1 h-3 bg-[#F8F4EE] rounded-full overflow-hidden border border-[var(--lp-border)]">
+                          <motion.div 
+                            initial={{ width: 0 }} 
+                            animate={{ width: `${percentage}%` }} 
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="h-full bg-[var(--lp-accent)] rounded-full" 
+                          />
+                        </div>
+                        <div className="w-12 text-right text-xs font-bold text-[var(--lp-muted)]">{percentage}%</div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Recent Reservations Table Preview */}
             <div className="bg-white rounded-2xl border border-[var(--lp-border)] p-6 shadow-sm">
@@ -307,7 +524,7 @@ export default function Admin() {
                             📍 {b.branch}
                           </span>
                         </td>
-                        <td className="p-4 font-medium">{b.guestDetails.fullName}</td>
+                        <td className="p-4 font-medium">{b.guestDetails?.fullName || "N/A"}</td>
                         <td className="p-4">{b.roomType} Room</td>
                         <td className="p-4 text-xs text-[var(--lp-muted)]">{b.checkIn} to {b.checkOut}</td>
                         <td className="p-4 font-semibold">₹{(b.totalPrice || 0).toLocaleString()}</td>
@@ -385,7 +602,7 @@ export default function Admin() {
                       <th className="p-4">Room Type</th>
                       <th className="p-4">Stay Dates</th>
                       <th className="p-4">Guests</th>
-                      <th className="p-4">Amount</th>
+                      <th className="p-4">Amount & Info</th>
                       <th className="p-4">Actions / Status</th>
                     </tr>
                   </thead>
@@ -403,24 +620,33 @@ export default function Admin() {
                           </span>
                         </td>
                         <td className="p-4">
-                          <p className="font-medium text-[var(--lp-heading)]">{b.guestDetails.fullName}</p>
-                          <p className="text-xs text-[var(--lp-muted)]">{b.guestDetails.email} | {b.guestDetails.phone}</p>
+                          <p className="font-medium text-[var(--lp-heading)]">{b.guestDetails?.fullName || "N/A"}</p>
+                          <p className="text-xs text-[var(--lp-muted)]">{b.guestDetails?.email || ""} | {b.guestDetails?.phone || ""}</p>
                         </td>
                         <td className="p-4 font-medium">{b.roomType} Room</td>
                         <td className="p-4 text-xs text-[var(--lp-muted)]">{b.checkIn} → {b.checkOut}</td>
                         <td className="p-4 text-xs">{b.adults} Adults, {b.children} Kids</td>
-                        <td className="p-4 font-semibold text-green-700">₹{(b.totalPrice || 0).toLocaleString()}</td>
                         <td className="p-4">
-                          <select
-                            value={b.status}
-                            onChange={(e) => handleStatusChange(b.id, e.target.value as BookingRecord["status"])}
-                            className="bg-[#F8F4EE] border border-[var(--lp-border)] rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
-                          >
-                            <option value="CONFIRMED">CONFIRMED</option>
-                            <option value="CHECKED_IN">CHECKED IN</option>
-                            <option value="CHECKED_OUT">CHECKED OUT</option>
-                            <option value="CANCELLED">CANCELLED</option>
-                          </select>
+                          <p className="font-semibold text-green-700">₹{(b.totalPrice || 0).toLocaleString()}</p>
+                          {b.razorpayPaymentId && <p className="text-[10px] text-[var(--lp-muted)] font-mono mt-0.5 truncate max-w-[120px]" title="Transaction ID">Txn: {b.razorpayPaymentId}</p>}
+                          {b.specialRequest && <p className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded mt-1 line-clamp-2" title={b.specialRequest}>Note: {b.specialRequest}</p>}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col gap-2">
+                            <select
+                              value={b.status}
+                              onChange={(e) => handleStatusChange(b.id, e.target.value as BookingRecord["status"])}
+                              className="bg-[#F8F4EE] border border-[var(--lp-border)] rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
+                            >
+                              <option value="CONFIRMED">CONFIRMED</option>
+                              <option value="CHECKED_IN">CHECKED IN</option>
+                              <option value="CHECKED_OUT">CHECKED OUT</option>
+                              <option value="CANCELLED">CANCELLED</option>
+                            </select>
+                            <button onClick={() => handlePrintInvoice(b)} className="text-xs bg-white border border-[var(--lp-border)] hover:bg-slate-50 px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 font-semibold text-[var(--lp-heading)] shadow-sm">
+                              🖨️ Print Invoice
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -480,6 +706,21 @@ export default function Admin() {
                     </span>
                     <h3 className="font-serif text-xl font-semibold">{r.name}</h3>
                   </div>
+
+                  {r.status === "OCCUPIED" && (() => {
+                    // Try to find a guest who checked in or is confirmed for this room type
+                    const occupant = branchBookings.find(b => b.roomType === r.type && (b.status === "CHECKED_IN" || b.status === "CONFIRMED"))
+                    return occupant ? (
+                      <div className="bg-blue-50 border border-blue-200 p-2.5 rounded-lg mb-3">
+                        <p className="text-[10px] font-bold text-blue-800 uppercase tracking-widest mb-0.5">👤 Current Guest</p>
+                        <p className="text-xs font-bold text-blue-950 truncate">{occupant.guestDetails?.fullName || "N/A"}</p>
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-[10px] font-semibold text-blue-700">Till: {occupant.checkOut}</p>
+                          <p className="text-[10px] text-blue-700 font-mono">#{occupant.referenceNumber}</p>
+                        </div>
+                      </div>
+                    ) : null
+                  })()}
                   
                   <p className="text-xs text-[var(--lp-muted)] mb-4">{r.type} Category</p>
 

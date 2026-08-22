@@ -4,6 +4,7 @@ import { getFirestore, collection, getDocs, limit, query } from "firebase/firest
 const firebaseConfig = {
   apiKey: "AIzaSyDVQsA2A0j_aw1XG2NsE83OFkEDdP-VW_I",
   authDomain: "leprestigeresidency-87e1f.firebaseapp.com",
+  databaseURL: "https://leprestigeresidency-87e1f-default-rtdb.firebaseio.com",
   projectId: "leprestigeresidency-87e1f",
   storageBucket: "leprestigeresidency-87e1f.firebasestorage.app",
   messagingSenderId: "545155829013",

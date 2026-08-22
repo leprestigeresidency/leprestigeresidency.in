@@ -10,6 +10,7 @@ export interface BookingRecord {
   checkOut: string;
   adults: number;
   children: number;
+  specialRequest?: string;
   guestDetails: {
     fullName: string;
     email: string;
@@ -18,6 +19,7 @@ export interface BookingRecord {
   totalPrice?: number;
   status: "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   paymentStatus: "PAID" | "PENDING" | "REFUNDED";
+  razorpayPaymentId?: string;
   createdAt?: any;
 }
 

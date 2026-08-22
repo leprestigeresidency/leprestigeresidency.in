@@ -11,10 +11,10 @@ const cards = [
   },
   {
     title: "EMAIL US",
-    detail: "reservations@leprestigeresidency.in",
+    detail: "leprestigeresidency@gmail.com",
     sub: "Reservations & Enquiries",
     action: "Send Email",
-    href: "mailto:reservations@leprestigeresidency.in",
+    href: "mailto:leprestigeresidency@gmail.com",
   },
   {
     title: "VISIT US",
