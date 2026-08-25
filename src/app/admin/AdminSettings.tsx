@@ -8,8 +8,6 @@ export default function AdminSettings() {
   const navigate = useNavigate();
 
   const [bookingNotifs, setBookingNotifs] = useState(true);
-  const [paymentNotifs, setPaymentNotifs] = useState(true);
-  const [invoiceNotifs, setInvoiceNotifs] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
 
   const handleLogout = async () => {
@@ -51,11 +49,11 @@ export default function AdminSettings() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
           <div>
-            <label className="text-xs uppercase font-bold text-slate-400 mb-1 block">Account Email</label>
+            <label className="text-xs uppercase font-bold text-slate-400 mb-1 block">Account Username</label>
             <input 
               type="text" 
               readOnly 
-              value={adminData?.email || "admin@leprestige.com"}
+              value={adminData?.username || adminData?.email?.split('@')[0] || "admin"}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-medium text-slate-700 cursor-not-allowed"
             />
           </div>
@@ -105,40 +103,14 @@ export default function AdminSettings() {
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors">
             <div>
-              <p className="text-sm font-bold text-slate-900">New Booking Alerts</p>
-              <p className="text-xs text-slate-500">Receive instant notifications when customers make online reservations.</p>
+              <p className="text-sm font-bold text-slate-900">New Reservation Alerts</p>
+              <p className="text-xs text-slate-500">Receive instant notifications when guests submit room reservation requests.</p>
             </div>
             <button 
               onClick={() => { setBookingNotifs(!bookingNotifs); showSaveToast(); }}
               className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${bookingNotifs ? "bg-blue-600" : "bg-slate-300"}`}
             >
               <span className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${bookingNotifs ? "left-6.5" : "left-0.5"}`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors border-t border-slate-100">
-            <div>
-              <p className="text-sm font-bold text-slate-900">Payment Confirmations</p>
-              <p className="text-xs text-slate-500">Get notified whenever a Razorpay online payment settles successfully.</p>
-            </div>
-            <button 
-              onClick={() => { setPaymentNotifs(!paymentNotifs); showSaveToast(); }}
-              className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${paymentNotifs ? "bg-blue-600" : "bg-slate-300"}`}
-            >
-              <span className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${paymentNotifs ? "left-6.5" : "left-0.5"}`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-3 hover:bg-slate-50 rounded-lg transition-colors border-t border-slate-100">
-            <div>
-              <p className="text-sm font-bold text-slate-900">Invoice Generation Alerts</p>
-              <p className="text-xs text-slate-500">Notify management when tax invoices are automatically compiled.</p>
-            </div>
-            <button 
-              onClick={() => { setInvoiceNotifs(!invoiceNotifs); showSaveToast(); }}
-              className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${invoiceNotifs ? "bg-blue-600" : "bg-slate-300"}`}
-            >
-              <span className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${invoiceNotifs ? "left-6.5" : "left-0.5"}`} />
             </button>
           </div>
         </div>

@@ -42,30 +42,11 @@ const DUMMY_DATA: Record<string, any> = {
       { col1: "John Smith", col2: "john@example.com", col3: "12", col4: "₹1,20,500", col5: "Platinum" },
     ]
   },
-  payments: {
-    title: "Financial Payments",
-    columns: ["Transaction ID", "Booking ID", "Method", "Date", "Status", "Amount"],
-    rows: [
-      { col1: "txn_29Xksjd", col2: "LP-101", col3: "Razorpay (UPI)", col4: "Aug 20, 2026", col5: "Success", col6: "₹4,500" },
-      { col1: "txn_78Sdfnw", col2: "LP-102", col3: "Card (Visa)", col4: "Aug 19, 2026", col5: "Success", col6: "₹5,000" },
-      { col1: "txn_92Pqwrm", col2: "LP-103", col3: "Pending", col4: "-", col5: "Pending", col6: "₹19,500" },
-    ]
-  },
-  invoices: {
-    title: "Invoices",
-    columns: ["Invoice #", "Guest", "Date Issued", "Amount", "Status", "Actions"],
-    rows: [
-      { col1: "INV-2026-001", col2: "Priya Menon", col3: "Aug 20, 2026", col4: "₹4,500", col5: "Paid", col6: "ready" },
-      { col1: "INV-2026-002", col2: "Rajesh Kumar", col3: "Aug 20, 2026", col4: "₹4,500", col5: "Unpaid", col6: "ready" },
-      { col1: "INV-2026-003", col2: "Anita Desai", col3: "Aug 19, 2026", col4: "₹10,500", col5: "Partially Paid", col6: "ready" },
-    ]
-  },
   notifications: {
     title: "System Notifications",
     columns: ["Type", "Message", "Time", "Status", "Action"],
     rows: [
-      { col1: "New Booking", col2: "John Smith booked the Suite for Aug 25", col3: "10 mins ago", col4: "Unread", col5: "View" },
-      { col1: "Payment Received", col2: "₹4,500 received for LP-101", col3: "1 hr ago", col4: "Read", col5: "Archive" },
+      { col1: "New Booking", col2: "John Smith reserved the Suite for Aug 25", col3: "10 mins ago", col4: "Unread", col5: "View" },
       { col1: "Housekeeping", col2: "Room 102 reported cleaning needed", col3: "2 hrs ago", col4: "Read", col5: "Assigned" },
     ]
   },
@@ -75,8 +56,7 @@ const DUMMY_DATA: Record<string, any> = {
     rows: [
       { col1: "General Information", col2: "Hotel name, address, contact details", col3: "Configured", col4: "Jan 1, 2026" },
       { col1: "Booking Rules", col2: "Check-in times, cancellation policies", col3: "Active", col4: "Mar 15, 2026" },
-      { col1: "Tax Setup", col2: "GST brackets and fee structures", col3: "Verified", col4: "Jun 1, 2026" },
-      { col1: "Integrations", col2: "Razorpay keys and Firebase settings", col3: "Connected", col4: "Aug 10, 2026" },
+      { col1: "Integrations", col2: "Firebase settings and reservation alerts", col3: "Connected", col4: "Aug 10, 2026" },
     ]
   }
 };

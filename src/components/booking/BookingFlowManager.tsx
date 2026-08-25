@@ -2,14 +2,12 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/context/AuthContext"
 import { useBooking, RoomType } from "@/context/BookingContext"
-import { X, CheckCircle, FileText } from "lucide-react"
+import { X } from "lucide-react"
 
 // Import individual steps
 import AuthStep from "./steps/AuthStep"
 import StayDetailsStep from "./steps/StayDetailsStep"
 import GuestDetailsStep from "./steps/GuestDetailsStep"
-import PaymentSummaryStep from "./steps/PaymentSummaryStep"
-import RazorpayMockStep from "./steps/RazorpayMockStep"
 import SuccessStep from "./steps/SuccessStep"
 
 interface BookingFlowManagerProps {
@@ -18,11 +16,11 @@ interface BookingFlowManagerProps {
   initialRoom: RoomType
 }
 
-type Step = "AUTH" | "STAY_DETAILS" | "GUEST_DETAILS" | "PAYMENT_SUMMARY" | "PAYMENT_MOCK" | "SUCCESS"
+type Step = "AUTH" | "STAY_DETAILS" | "GUEST_DETAILS" | "SUCCESS"
 
 export default function BookingFlowManager({ isOpen, onClose, initialRoom }: BookingFlowManagerProps) {
   const { user, loading } = useAuth()
-  const { bookingData, updateBooking, resetBooking } = useBooking()
+  const { updateBooking, resetBooking } = useBooking()
   const [currentStep, setCurrentStep] = useState<Step>("STAY_DETAILS")
 
   useEffect(() => {
@@ -30,10 +28,6 @@ export default function BookingFlowManager({ isOpen, onClose, initialRoom }: Boo
       if (initialRoom) {
         updateBooking({ roomType: initialRoom })
       }
-      
-      // If user is not logged in and opens the modal, maybe they should pick dates first,
-      // then login. The prompt says "Login Continuity: Automatically return user to the exact room they selected."
-      // Let's make STAY_DETAILS the first step. Then before GUEST_DETAILS or PAYMENT, check auth.
       setCurrentStep("STAY_DETAILS")
     }
   }, [isOpen, initialRoom])
@@ -92,23 +86,7 @@ export default function BookingFlowManager({ isOpen, onClose, initialRoom }: Boo
               <GuestDetailsStep 
                 key="guest" 
                 onBack={() => setCurrentStep("STAY_DETAILS")}
-                onNext={() => setCurrentStep("PAYMENT_SUMMARY")} 
-              />
-            )}
-            
-            {currentStep === "PAYMENT_SUMMARY" && (
-              <PaymentSummaryStep 
-                key="summary" 
-                onBack={() => setCurrentStep("GUEST_DETAILS")}
-                onNext={() => setCurrentStep("PAYMENT_MOCK")} 
-              />
-            )}
-            
-            {currentStep === "PAYMENT_MOCK" && (
-              <RazorpayMockStep 
-                key="mock" 
-                onSuccess={() => setCurrentStep("SUCCESS")} 
-                onCancel={() => setCurrentStep("PAYMENT_SUMMARY")} 
+                onNext={() => setCurrentStep("SUCCESS")} 
               />
             )}
             

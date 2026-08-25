@@ -16,10 +16,7 @@ export interface BookingRecord {
     email: string;
     phone: string;
   };
-  totalPrice?: number;
-  status: "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
-  paymentStatus: "PAID" | "PENDING" | "REFUNDED";
-  razorpayPaymentId?: string;
+  status: "Reserved" | "Confirmed" | "Checked In" | "Checked Out" | "Cancelled" | "Completed" | "CONFIRMED" | string;
   createdAt?: any;
 }
 

@@ -109,8 +109,7 @@ export default function AdminBookings() {
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Guest Info</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Travel Dates</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Room Tier</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Value</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Booking Status</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Reservation Status</th>
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
@@ -119,7 +118,7 @@ export default function AdminBookings() {
                 <tr key={b.id} className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => handleAction("View Booking Details")}>
                   {/* REF */}
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">{b.bookingId || "N/A"}</div>
+                    <div className="font-bold text-slate-900">{b.bookingId || b.referenceNumber || "N/A"}</div>
                     <div className="text-[10px] text-slate-400 font-mono mt-0.5">{b.id.slice(0, 8)}</div>
                   </td>
                   {/* GUEST */}
@@ -137,28 +136,16 @@ export default function AdminBookings() {
                       {b.roomType || "Unassigned"}
                     </span>
                   </td>
-                  {/* VALUE */}
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-slate-900">₹{b.total ? b.total.toLocaleString("en-IN") : "0"}</div>
-                    <div className="text-[10px] font-bold mt-0.5 uppercase tracking-wide">
-                       <span className={b.paymentStatus === "Paid" ? "text-emerald-500" : "text-amber-500"}>
-                         {b.paymentStatus || "Unpaid"}
-                       </span>
-                    </div>
-                  </td>
                   {/* STATUS */}
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${getStatusBadgeColors(b.status)}`}>
-                      {b.status || "Unknown"}
+                      {b.status || "Reserved"}
                     </span>
                   </td>
                   {/* ACTIONS */}
                   <td className="px-6 py-4 text-right">
-                    <button onClick={(e) => { e.stopPropagation(); handleAction("Edit Booking Options"); }} className="text-slate-400 hover:text-blue-600 bg-white p-2 rounded-lg border border-transparent group-hover:border-slate-200 transition-all shadow-sm opacity-0 group-hover:opacity-100">
+                    <button onClick={(e) => { e.stopPropagation(); handleAction("Edit Booking Options"); }} className="text-slate-400 hover:text-blue-600 bg-white p-2 rounded-lg border border-slate-200 transition-all shadow-sm">
                       <MoreHorizontal size={16} />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); window.print(); }} className="ml-2 text-slate-500 hover:text-emerald-600 bg-white p-2 rounded-lg border border-slate-200 transition-all shadow-sm">
-                      <Download size={16} />
                     </button>
                   </td>
                 </tr>

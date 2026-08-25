@@ -7,13 +7,11 @@ export interface BookingData {
   roomId?: string
   roomType: RoomType
   roomName?: string
-  pricePerNight?: number
   checkIn: Date | null
   checkOut: Date | null
   adults: number
   children: number
   specialRequest: string
-  coupon: string
 }
 
 export interface GuestDetails {
@@ -26,8 +24,6 @@ export interface GuestDetails {
 export interface BookingResult {
   bookingId: string
   referenceNumber: string
-  totalPrice: number
-  paymentStatus: string
   status: string
 }
 
@@ -46,13 +42,11 @@ const initialBookingData: BookingData = {
   roomId: "pondy-deluxe",
   roomType: "Deluxe",
   roomName: "Deluxe Room",
-  pricePerNight: 4500,
   checkIn: null,
   checkOut: null,
   adults: 2,
   children: 0,
   specialRequest: "",
-  coupon: "",
 }
 
 const initialGuestDetails: GuestDetails = {

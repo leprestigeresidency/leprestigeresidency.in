@@ -12,14 +12,14 @@ const infoItems = [
     description: "Late check-out on request",
   },
   {
-    category: "Payment Methods",
-    title: "UPI • Cards • Net Banking",
-    description: "Razorpay secured checkout",
+    category: "Reservation",
+    title: "Direct Booking",
+    description: "Instant confirmation & seat hold",
   },
   {
-    category: "GST",
-    title: "5%",
-    description: "Applied automatically at checkout",
+    category: "Special Requests",
+    title: "On Demand",
+    description: "Specify requests during reservation",
   },
   {
     category: "Cancellation",

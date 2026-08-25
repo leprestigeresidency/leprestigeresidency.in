@@ -107,51 +107,6 @@ export default function Rooms() {
       {/* Rooms Hero Header */}
       <RoomsHero onBook={handleBook} location={currentLocation} rooms={currentRooms} />
 
-      {/* Location Switcher Sub-bar */}
-      <div className="bg-[#F5F1EA] py-6 border-b border-[var(--lp-border)]">
-        <div className="max-w-[1240px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <span className="text-xs uppercase tracking-[0.2em] font-bold text-[var(--lp-accent)] block">
-              Active Property Location
-            </span>
-            <h2 className="text-xl md:text-2xl font-medium text-[var(--lp-heading)] mt-0.5" style={{ fontFamily: "var(--font-heading)" }}>
-              Le Prestige {currentLocation.name}
-            </h2>
-          </div>
-
-          <div className="inline-flex items-center p-1 rounded-full bg-white border border-[var(--lp-border)] shadow-sm">
-            <button
-              onClick={() => handleLocationSwitch("pondicherry")}
-              className={`px-5 py-2 rounded-full text-xs font-bold tracking-[0.14em] uppercase transition-all duration-300 cursor-pointer border-none flex items-center justify-center gap-1 ${
-                activeLocationId === "pondicherry"
-                  ? "shadow-sm"
-                  : "text-black hover:text-[var(--lp-accent)] bg-transparent"
-              }`}
-              style={{
-                backgroundColor: activeLocationId === "pondicherry" ? "var(--lp-accent)" : "transparent",
-                color: activeLocationId === "pondicherry" ? "#ffffff" : undefined
-              }}
-            >
-              Pondicherry
-            </button>
-            <button
-              onClick={() => handleLocationSwitch("tindivanam")}
-              className={`px-5 py-2 rounded-full text-xs font-bold tracking-[0.14em] uppercase transition-all duration-300 cursor-pointer border-none flex items-center justify-center gap-1 ${
-                activeLocationId === "tindivanam"
-                  ? "shadow-sm"
-                  : "text-black hover:text-[var(--lp-accent)] bg-transparent"
-              }`}
-              style={{
-                backgroundColor: activeLocationId === "tindivanam" ? "var(--lp-accent)" : "transparent",
-                color: activeLocationId === "tindivanam" ? "#ffffff" : undefined
-              }}
-            >
-              Tindivanam
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Rooms Cards */}
       {currentRooms.map((room, index) => {
         // Override static available with real-time db available if fetched

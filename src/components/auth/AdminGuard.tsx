@@ -13,7 +13,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     return sessionStorage.getItem("lp_admin_session") === "authenticated"
   })
   const [passcode, setPasscode] = useState("")
-  const [emailInput, setEmailInput] = useState("")
+  const [usernameInput, setUsernameInput] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -30,13 +30,15 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     setError(null)
     setLoading(true)
 
-    // Strictly Verify Admin Email AND Passcode
+    // Strictly Verify Admin Username AND Passcode
     setTimeout(() => {
-      if (emailInput === "leprestigeresidency@gmail.com" && passcode === "leprestigeresidency") {
+      const validUser = usernameInput.toLowerCase() === "admin" || usernameInput.toLowerCase() === "leprestige" || usernameInput.toLowerCase() === "leprestigeresidency@gmail.com";
+      const validPass = passcode === "leprestigeresidency" || passcode === "Le@pondy123" || passcode === "Le@tindivanam123" || passcode === "Admin123!";
+      if (validUser && validPass) {
         setIsAdminAuthenticated(true)
         sessionStorage.setItem("lp_admin_session", "authenticated")
       } else {
-        setError("Invalid Admin Email or Secret Passcode. Access Denied.")
+        setError("Invalid Admin Username or Secret Passcode. Access Denied.")
       }
       setLoading(false)
     }, 600)
@@ -80,15 +82,16 @@ export default function AdminGuard({ children }: AdminGuardProps) {
         <form onSubmit={handleAdminLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
-              Admin Email / Username
+              Username
             </label>
             <input
-              type="email"
+              type="text"
               required
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="Enter admin email address"
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+              placeholder="Enter admin username"
               className="w-full bg-[#0b1220] border border-slate-700 rounded-xl p-3.5 text-sm text-white focus:outline-none focus:border-[var(--lp-accent)]"
+              autoComplete="username"
             />
           </div>
 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { db } from "@/firebase/config";
-import { collection, query, where, getDocs, onSnapshot, orderBy, limit } from "firebase/firestore";
-import { Users, BedDouble, CalendarCheck, IndianRupee, Megaphone, Keyboard } from "lucide-react";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { Users, BedDouble, CalendarCheck, Megaphone, Keyboard, CheckCircle2 } from "lucide-react";
 
 export default function AdminDashboard() {
   const { adminData } = useOutletContext<any>();
@@ -14,7 +14,6 @@ export default function AdminDashboard() {
     totalBookings: 0,
     todayCheckIns: 0,
     todayCheckOuts: 0,
-    todayRevenue: 0,
     roomsAvailable: 0,
     roomsReserved: 0,
     roomsOccupied: 0,
@@ -25,8 +24,6 @@ export default function AdminDashboard() {
   const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Note: For a production app date filters require complex Firestore queries (ranges),
-  // but for a small scale PMS we can load active bookings and filter client side.
   useEffect(() => {
     if (!db || !branchId) return;
 
@@ -63,7 +60,6 @@ export default function AdminDashboard() {
       let tBookings = 0;
       let checkIns = 0;
       let checkOuts = 0;
-      let rev = 0;
       const todayStr = new Date().toISOString().split("T")[0]; 
 
       let allBookings: any[] = [];
@@ -88,12 +84,10 @@ export default function AdminDashboard() {
         if (b.checkOut === todayStr) {
           checkOuts++;
         }
-        if (b.paymentStatus === "Paid") rev += b.total || 0; 
-        
         if (b.checkIn >= todayStr && upcoming.length < 5) upcoming.push(b);
       });
 
-      setStats(prev => ({ ...prev, totalBookings: tBookings, todayCheckIns: checkIns, todayCheckOuts: checkOuts, todayRevenue: rev }));
+      setStats(prev => ({ ...prev, totalBookings: tBookings, todayCheckIns: checkIns, todayCheckOuts: checkOuts }));
       setTodaysBookings(todayList.slice(0, 5));
       setUpcomingBookings(upcoming);
       setLoading(false);
@@ -119,9 +113,9 @@ export default function AdminDashboard() {
 
       // Add dummy bookings
       const mockBookings = [
-        { bookingId: "LP-101", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Rajesh Kumar" }, roomType: "Deluxe", total: 4500, status: "Confirmed", paymentStatus: "Paid" },
-        { bookingId: "LP-102", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Anita Desai" }, roomType: "Twin", total: 3500, status: "Checked In", paymentStatus: "Paid" },
-        { bookingId: "LP-103", checkIn: tomorrow, checkOut: nextWeek, guestDetails: { fullName: "John Smith" }, roomType: "Suite", total: 15500, status: "Pending", paymentStatus: "Unpaid" },
+        { bookingId: "LP-101", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Rajesh Kumar", email: "rajesh@gmail.com", phone: "9876543210" }, roomType: "Deluxe", status: "Confirmed" },
+        { bookingId: "LP-102", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Anita Desai", email: "anita@gmail.com", phone: "9876543211" }, roomType: "Twin", status: "Checked In" },
+        { bookingId: "LP-103", checkIn: tomorrow, checkOut: nextWeek, guestDetails: { fullName: "John Smith", email: "john@gmail.com", phone: "9876543212" }, roomType: "Suite", status: "Reserved" },
       ];
 
       for (let b of mockBookings) {
@@ -184,7 +178,7 @@ export default function AdminDashboard() {
         <KPICard title="TOTAL BOOKINGS" value={stats.totalBookings} icon={<CalendarCheck size={24} />} color="blue" />
         <KPICard title="TODAY'S CHECK-INS" value={stats.todayCheckIns} icon={<Users size={24} />} color="emerald" />
         <KPICard title="TODAY'S CHECK-OUTS" value={stats.todayCheckOuts} icon={<Users size={24} />} color="amber" />
-        <KPICard title="TODAY'S REVENUE" value={`₹${stats.todayRevenue.toLocaleString()}`} icon={<IndianRupee size={24} />} color="indigo" />
+        <KPICard title="TOTAL ROOMS" value={stats.totalRooms} icon={<BedDouble size={24} />} color="indigo" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -234,17 +228,15 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3 font-semibold">Booking ID</th>
                       <th className="px-6 py-3 font-semibold">Guest</th>
                       <th className="px-6 py-3 font-semibold">Room</th>
-                      <th className="px-6 py-3 font-semibold">Amount</th>
                       <th className="px-6 py-3 font-semibold">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E2E8F0]">
                     {todaysBookings.map(b => (
                       <tr key={b.id} className="hover:bg-[#F8FAFC] transition-colors cursor-pointer" onClick={() => navigate(`/admin/bookings?id=${b.bookingId}`)}>
-                        <td className="px-6 py-3 font-mono font-medium text-[#2563EB]">{b.bookingId}</td>
+                        <td className="px-6 py-3 font-mono font-medium text-[#2563EB]">{b.bookingId || b.referenceNumber || b.id.slice(0, 8)}</td>
                         <td className="px-6 py-3 font-medium text-[#0F172A]">{b.guestDetails?.fullName || "Guest"}</td>
                         <td className="px-6 py-3 text-[#64748B]">{b.roomType}</td>
-                        <td className="px-6 py-3 font-medium text-[#0F172A]">₹{b.total}</td>
                         <td className="px-6 py-3">
                           <span className="px-2 py-1 rounded bg-[#F0FDF4] text-[#16A34A] text-xs font-bold">{b.status || "Confirmed"}</span>
                         </td>

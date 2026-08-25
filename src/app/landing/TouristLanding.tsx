@@ -269,12 +269,12 @@ export default function TouristLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Double Room */}
+            {/* Deluxe Room */}
             <div className="bg-[#F8F4EE] rounded-2xl overflow-hidden border border-[#E5DED5] flex flex-col">
               <div className="h-56 overflow-hidden relative">
                 <img
                   src="/images/Delux room.jpeg"
-                  alt="Deluxe Double Room"
+                  alt="Deluxe Room"
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />
@@ -285,7 +285,7 @@ export default function TouristLanding() {
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                 <div>
                   <h3 className="font-serif text-2xl font-bold text-[#262626]">
-                    Double Room
+                    Deluxe Room
                   </h3>
                   <p className="text-xs text-[#575757] mt-1 font-sans">
                     Ideal for couples & weekend getaways. Plush queen bed, modern AC, attached pristine bath.
@@ -295,7 +295,7 @@ export default function TouristLanding() {
                   href="#reserve"
                   className="w-full py-2.5 bg-[#C45A37] hover:bg-[#B24F30] text-white text-xs font-sans font-bold uppercase tracking-wider rounded-xl text-center block transition-colors"
                 >
-                  Reserve Double Room
+                  Reserve Deluxe Room
                 </a>
               </div>
             </div>

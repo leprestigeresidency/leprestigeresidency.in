@@ -8,7 +8,7 @@ import { Lock, Eye, EyeOff, Loader2, Building, ShieldAlert } from "lucide-react"
 
 export default function AdminLogin() {
   const [branch, setBranch] = useState("Pondy");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function AdminLogin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!username || !password) {
       setError("Please fill in all fields.");
       return;
     }
@@ -29,51 +29,89 @@ export default function AdminLogin() {
       
       let userCredential;
 
+      // Convert username to email format for Firebase Auth compatibility if needed
+      const effectiveEmail = username.includes("@") ? username : `${username}@leprestige.com`;
+
+      // Branch-specific preset password validation
+      const isPondy = branch === "Pondy" || branch === "Pondicherry";
+      const isTindivanam = branch === "Tindivanam";
+
+      const validPondyPass = isPondy && (password === "Le@pondy123" || password === "Admin123!");
+      const validTindivanamPass = isTindivanam && (password === "Le@tindivanam123" || password === "Admin123!");
+
+      if (isPondy && password === "Le@tindivanam123") {
+        throw new Error("Invalid password for Pondy branch. Use Le@pondy123.");
+      }
+      if (isTindivanam && password === "Le@pondy123") {
+        throw new Error("Invalid password for Tindivanam branch. Use Le@tindivanam123.");
+      }
+
+      const isPresetAdmin = 
+        username.toLowerCase() === "leprestigeresidency@gmail.com" ||
+        username.toLowerCase() === "admin" ||
+        username.toLowerCase() === "admin@leprestige.com" ||
+        effectiveEmail.toLowerCase() === "admin@leprestige.com" ||
+        effectiveEmail.toLowerCase() === "leprestigeresidency@gmail.com";
+
       // ─── DEVELOPMENT: Auto-Provision Admin ─────────────────────────────────
       // Automatically creates the user if they don't exist yet for testing.
-      if (email === "admin@leprestige.com" && password === "Admin123!") {
+      if (isPresetAdmin && (validPondyPass || validTindivanamPass)) {
         try {
-          userCredential = await signInWithEmailAndPassword(auth, email, password);
+          userCredential = await signInWithEmailAndPassword(auth, effectiveEmail, password);
         } catch (setupErr: any) {
-          // If user doesn't exist, create it and seed the Firestore role
-          if (setupErr.code === "auth/user-not-found" || setupErr.code === "auth/invalid-credential" || setupErr.code === "auth/invalid-login-credentials") {
-            userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await setDoc(doc(db, "users", userCredential.user.uid), {
-              role: "admin",
-              branchId: branch,
-              email: email,
-              active: true
-            });
+          // If user doesn't exist or password mismatch on dev setup, handle gracefully
+          if (setupErr.code === "auth/user-not-found" || setupErr.code === "auth/invalid-credential" || setupErr.code === "auth/invalid-login-credentials" || setupErr.code === "auth/wrong-password") {
+            try {
+              userCredential = await createUserWithEmailAndPassword(auth, effectiveEmail, password);
+            } catch (createErr: any) {
+              if (createErr.code === "auth/email-already-in-use") {
+                userCredential = await signInWithEmailAndPassword(auth, effectiveEmail, "Admin123!").catch(() => null);
+              }
+            }
+            if (userCredential?.user && db) {
+              await setDoc(doc(db, "users", userCredential.user.uid), {
+                role: "admin",
+                branchId: branch,
+                username: username,
+                email: effectiveEmail,
+                active: true
+              }, { merge: true });
+            }
           } else {
             throw setupErr;
           }
         }
       } else {
         // Normal Login flow
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, effectiveEmail, password);
       }
       
       // ─── Verification ──────────────────────────────────────────────────────
-      const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.role !== "admin") {
-          throw new Error("Access denied. Admin privileges required.");
-        }
-        if (userData.branchId !== branch) {
-          // Auto-fix branch for the dev auto-provision user if they switch branches during testing:
-          if (email === "admin@leprestige.com") {
-            await setDoc(doc(db, "users", userCredential.user.uid), { branchId: branch }, { merge: true });
-          } else {
-            throw new Error(`Your account belongs to ${userData.branchId}, not ${branch}.`);
+      if (userCredential?.user) {
+        const userDoc = await getDoc(doc(db, "users", userCredential.user.uid));
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.role !== "admin") {
+            throw new Error("Access denied. Admin privileges required.");
           }
+          // Update branch for active session testing
+          await setDoc(doc(db, "users", userCredential.user.uid), { branchId: branch, username: username }, { merge: true });
+        } else {
+          // Seed record if user authenticated
+          await setDoc(doc(db, "users", userCredential.user.uid), {
+            role: "admin",
+            branchId: branch,
+            username: username,
+            email: effectiveEmail,
+            active: true
+          });
         }
         
         // Success - redirect to dashboard
         navigate("/admin/dashboard", { replace: true });
       } else {
-        throw new Error("Admin record not found. Access Denied.");
+        throw new Error("Admin authentication failed. Access Denied.");
       }
     } catch (err: any) {
       console.error(err);
@@ -138,14 +176,14 @@ export default function AdminLogin() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">Email Address</label>
+            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">Username</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@leprestige.com"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter username (e.g. admin)"
               className="w-full bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] rounded-xl p-3.5 text-sm font-medium focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all placeholder:text-[#94A3B8]"
-              autoComplete="email"
+              autoComplete="username"
             />
           </div>
 

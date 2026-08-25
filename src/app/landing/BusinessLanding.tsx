@@ -179,12 +179,12 @@ export default function BusinessLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Double Room */}
+            {/* Deluxe Room */}
             <div className="bg-white rounded-2xl overflow-hidden border border-[#E5DED5] flex flex-col shadow-sm">
               <div className="h-52 overflow-hidden">
                 <img
                   src="/images/Delux room.jpeg"
-                  alt="Deluxe Double Room for Business Stay"
+                  alt="Deluxe Room for Business Stay"
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />
@@ -192,7 +192,7 @@ export default function BusinessLanding() {
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                 <div>
                   <h3 className="font-serif text-xl font-bold text-[#262626]">
-                    Double / Executive Room
+                    Deluxe / Executive Room
                   </h3>
                   <p className="text-xs text-[#575757] mt-1 font-sans">
                     Comfortable king/queen bed, writing desk area, work lighting, and air conditioning.
@@ -202,7 +202,7 @@ export default function BusinessLanding() {
                   href="#enquiry"
                   className="w-full py-2.5 bg-[#262626] hover:bg-[#1C1C1C] text-white text-xs font-sans font-bold uppercase tracking-wider rounded-xl text-center block transition-colors"
                 >
-                  Enquire for Executive Room
+                  Enquire for Deluxe Room
                 </a>
               </div>
             </div>

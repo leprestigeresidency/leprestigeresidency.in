@@ -309,7 +309,7 @@ export default function TouristForm() {
               }`}
             >
               <option value="No preference">No preference</option>
-              <option value="Double Room">Double Room (₹3,000/night)</option>
+              <option value="Deluxe Room">Deluxe Room (₹3,000/night)</option>
               <option value="Family Room">Family Room</option>
               <option value="Suite">Suite</option>
             </select>

@@ -14,17 +14,15 @@ import Container from "@/components/layout/Container"
 export default function Home() {
   return (
     <main className="w-full bg-[#F8F4EE] min-h-screen">
-      <Container>
-        <Hero />
-        <Experience />
-        <FeaturedRooms />
-        <Amenities />
-        <Gallery />
-        <Reviews />
-        <Branches />
-        <Location />
-        <CTA />
-      </Container>
+      <Hero />
+      <Experience />
+      <FeaturedRooms />
+      <Amenities />
+      <Gallery />
+      <Reviews />
+      <Branches />
+      <Location />
+      <CTA />
     </main>
   );
 }

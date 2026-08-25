@@ -20,16 +20,15 @@ export default function HeroButtons() {
     >
       <Link
         to="/rooms"
+        className="px-6 sm:px-10 py-3.5 sm:py-4 text-[11px] sm:text-[12px]"
         style={{
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "var(--font-body)",
           fontWeight: 700,
-          fontSize: 12,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          padding: "16px 40px",
           borderRadius: 9999,
           background: "var(--lp-accent)",
           color: "#FFFFFF",
@@ -49,16 +48,15 @@ export default function HeroButtons() {
 
       <Link
         to="/rooms"
+        className="px-6 sm:px-10 py-3.5 sm:py-4 text-[11px] sm:text-[12px]"
         style={{
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "var(--font-body)",
           fontWeight: 700,
-          fontSize: 12,
           letterSpacing: "0.14em",
           textTransform: "uppercase",
-          padding: "16px 40px",
           borderRadius: 9999,
           background: "rgba(255, 255, 255, 0.12)",
           border: "1.5px solid #FFFFFF",

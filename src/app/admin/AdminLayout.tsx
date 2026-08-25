@@ -91,8 +91,6 @@ export default function AdminLayout() {
     "calendar": "Availability Calendar",
     "rooms": "Room Inventory",
     "guests": "Guest Directory",
-    "payments": "Financial Payments",
-    "invoices": "Invoices",
     "notifications": "System Notifications",
     "settings": "Admin Settings",
   };
@@ -118,7 +116,7 @@ export default function AdminLayout() {
               <input 
                 autoFocus
                 type="text" 
-                placeholder="Search bookings, guests, or invoices..." 
+                placeholder="Search bookings, guests, or reservations..." 
                 className="flex-1 bg-transparent text-lg font-medium text-slate-900 focus:outline-none placeholder:text-slate-400"
               />
               <button 
@@ -168,15 +166,6 @@ export default function AdminLayout() {
               </div>
             </div>
 
-            {/* FINANCE */}
-            <div>
-              <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Finance</p>
-              <div className="space-y-1">
-                <NavItem to="/admin/payments" icon={<CreditCard size={20} />} label="Payments" />
-                <NavItem to="/admin/invoices" icon={<FileText size={20} />} label="Invoices" />
-              </div>
-            </div>
-
             {/* SYSTEM */}
             <div>
               <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">System</p>
@@ -209,9 +198,9 @@ export default function AdminLayout() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-slate-50 relative">
         {/* Header */}
-        <header className="bg-white border-b border-slate-200 shrink-0 h-[72px] flex items-center justify-between px-6 lg:px-8 relative z-30">
+        <header className="bg-white border-b border-slate-200 shrink-0 h-[72px] flex items-center justify-between px-4 sm:px-6 lg:px-8 relative z-30">
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button 
               className="lg:hidden text-slate-500 hover:text-slate-900"
               onClick={() => setIsSidebarOpen(true)}
@@ -220,16 +209,16 @@ export default function AdminLayout() {
             </button>
             
             <div>
-              <h2 className="text-xl font-bold text-slate-900 leading-none mb-1">{title}</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-none mb-1">{title}</h2>
               <p className="text-xs text-slate-500 font-medium">Welcome back, {adminData?.email.split('@')[0]}</p>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-6 text-sm">
-            <span className="text-slate-500 font-medium">{currentDate}</span>
-            <div className="w-px h-6 bg-slate-200" />
+          <div className="flex items-center gap-4 sm:gap-6 text-sm">
+            <span className="hidden md:inline-block text-slate-500 font-medium">{currentDate}</span>
+            <div className="hidden md:block w-px h-6 bg-slate-200" />
             
-            <div className="flex items-center gap-5 relative">
+            <div className="flex items-center gap-4 sm:gap-5 relative">
               {/* SEARCH BUTTON */}
               <button 
                 onClick={() => setShowSearch(true)}
@@ -252,26 +241,18 @@ export default function AdminLayout() {
                 {showNotifications && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
-                    <div className="absolute right-0 mt-4 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 mt-4 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                         <span className="font-bold text-slate-900 text-sm">Notifications</span>
-                        <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">2 NEW</span>
+                        <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">1 NEW</span>
                       </div>
                       <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
                         <div className="p-4 bg-blue-50/50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
                           <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><CalendarDays size={14}/></div>
                           <div>
                             <p className="text-sm text-slate-900 font-semibold mb-0.5">New Booking Received</p>
-                            <p className="text-xs text-slate-500 line-clamp-2">Rajesh Kumar just booked Deluxe King for Aug 20.</p>
+                            <p className="text-xs text-slate-500 line-clamp-2">Rajesh Kumar reserved Deluxe Room.</p>
                             <p className="text-[10px] text-blue-600 font-bold mt-1 uppercase">10 mins ago</p>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-blue-50/50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><CreditCard size={14}/></div>
-                          <div>
-                            <p className="text-sm text-slate-900 font-semibold mb-0.5">Payment Successful</p>
-                            <p className="text-xs text-slate-500">₹4,500 received via Razorpay for LP-101.</p>
-                            <p className="text-[10px] text-blue-600 font-bold mt-1 uppercase">1 hr ago</p>
                           </div>
                         </div>
                       </div>
@@ -288,7 +269,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Scrollable Page Content */}
-        <div className="flex-1 overflow-auto p-6 md:p-8 z-10 relative">
+        <div className="flex-1 overflow-auto p-4 sm:p-6 md:p-8 z-10 relative">
           <div className="mx-auto max-w-7xl">
             <Outlet context={{ adminData }} />
           </div>

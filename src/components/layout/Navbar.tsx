@@ -81,9 +81,9 @@ export default function Navbar({ scrolled }: NavbarProps) {
         }}
       >
         <div
+          className="px-4 sm:px-8 py-3"
           style={{
             borderRadius: 9999,
-            padding: "12px 32px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -268,7 +268,6 @@ export default function Navbar({ scrolled }: NavbarProps) {
               border: "none",
               cursor: "pointer",
               padding: 6,
-              display: "none",
             }}
           >
             {[0, 1, 2].map((i) => (
@@ -278,7 +277,7 @@ export default function Navbar({ scrolled }: NavbarProps) {
                   display: "block",
                   width: 22,
                   height: 2,
-                  background: scrolled ? "var(--lp-heading)" : "#FFFFFF",
+                  background: "#000000",
                   borderRadius: 2,
                   marginBottom: i < 2 ? 5 : 0,
                   transition: "all 0.3s",

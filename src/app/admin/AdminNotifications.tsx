@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase/config";
-import { Bell, CalendarCheck, CreditCard, CheckCircle2, AlertCircle, FileText, Loader2 } from "lucide-react";
+import { Bell, CalendarCheck, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 export default function AdminNotifications() {
   const { adminData } = useOutletContext<any>();
@@ -34,26 +34,12 @@ export default function AdminNotifications() {
           id: `notif-booking-${doc.id}`,
           type: "New Booking",
           title: "New Reservation Received",
-          description: `${guestName} booked ${d.roomType || "Room"} for ${d.checkIn || "upcoming dates"}.`,
+          description: `${guestName} reserved ${d.roomType || "Room"} for ${d.checkIn || "upcoming dates"}.`,
           bookingId: bookingId,
           date: timeStr,
           timestamp: d.createdAt?.toMillis ? d.createdAt.toMillis() : 0,
           targetRoute: "/admin/bookings"
         });
-
-        // Notification 2: Payment Received (if paid)
-        if (d.paymentStatus === "Paid" || d.status === "Confirmed") {
-          notifs.push({
-            id: `notif-pay-${doc.id}`,
-            type: "Payment Received",
-            title: "Payment Confirmed via Razorpay",
-            description: `Payment of ₹${Number(d.total || 0).toLocaleString("en-IN")} received for Booking #${bookingId}.`,
-            bookingId: bookingId,
-            date: timeStr,
-            timestamp: (d.createdAt?.toMillis ? d.createdAt.toMillis() : 0) + 1,
-            targetRoute: "/admin/payments"
-          });
-        }
       });
 
       // Sort newest first
@@ -83,8 +69,6 @@ export default function AdminNotifications() {
     switch (type) {
       case "New Booking":
         return <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><CalendarCheck size={20} /></div>;
-      case "Payment Received":
-        return <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><CreditCard size={20} /></div>;
       default:
         return <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center shrink-0"><Bell size={20} /></div>;
     }

@@ -373,7 +373,7 @@ export default function BusinessForm() {
               }`}
             >
               <option value="No preference">No preference</option>
-              <option value="Double Room">Double Room</option>
+              <option value="Deluxe Room">Deluxe Room</option>
               <option value="Family Room">Family Room</option>
               <option value="Suite">Suite</option>
             </select>

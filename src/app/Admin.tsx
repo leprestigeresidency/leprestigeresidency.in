@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { LayoutDashboard, CalendarCheck, BedDouble, MessageSquare, IndianRupee, TrendingUp, Users, Search, RefreshCw, Shield, MapPin, Building2, Globe, LogOut, Trash2, BellRing } from "lucide-react"
+import { LayoutDashboard, CalendarCheck, BedDouble, MessageSquare, TrendingUp, Users, Search, RefreshCw, Shield, MapPin, Building2, Globe, LogOut, Trash2, BellRing } from "lucide-react"
 import { AdminService, BookingRecord, RoomRecord, InquiryRecord } from "@/services/admin.service"
 import { db } from "@/firebase/config"
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore"
@@ -132,7 +132,6 @@ export default function Admin() {
   })
 
   // Summary Metrics calculated per active branch selection
-  const totalRevenue = branchBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0)
   const occupiedRooms = branchRooms.filter((r) => r.status === "OCCUPIED").length
   const occupancyRate = branchRooms.length ? Math.round((occupiedRooms / branchRooms.length) * 100) : 0
 
@@ -154,16 +153,14 @@ export default function Admin() {
         "Booking ID": b.id,
         "Reference": b.referenceNumber,
         "Branch": b.branch,
-        "Guest Name": b.guestDetails.fullName,
-        "Email": b.guestDetails.email,
-        "Phone": b.guestDetails.phone,
+        "Guest Name": b.guestDetails?.fullName || "N/A",
+        "Email": b.guestDetails?.email || "N/A",
+        "Phone": b.guestDetails?.phone || "N/A",
         "Room Type": b.roomType,
         "Check In": b.checkIn,
         "Check Out": b.checkOut,
         "Guests": `${b.adults} Adults, ${b.children} Kids`,
-        "Total Price": b.totalPrice,
         "Status": b.status,
-        "Payment": b.paymentStatus
       }))
       filename = `LePrestige_Bookings_${selectedBranch}.csv`
     } else if (activeTab === "INQUIRIES") {
@@ -207,33 +204,6 @@ export default function Admin() {
     document.body.removeChild(link)
   }
 
-  const handlePrintInvoice = (b: BookingRecord) => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <html><head><title>Invoice - ${b.referenceNumber}</title>
-      <style>body { font-family: sans-serif; padding: 40px; color: #111827; } .header { border-bottom: 2px solid #b89758; padding-bottom: 20px; mb-20px; } .flex { display: flex; justify-content: space-between; } .text-right { text-align: right; } table { width: 100%; border-collapse: collapse; margin-top: 30px; } th, td { border: 1px solid #ddd; padding: 12px; text-align: left; } th { background-color: #f8f4ee; }</style></head>
-      <body>
-        <div class="header flex">
-          <div><h1 style="color: #1b4332; margin:0; font-family: serif;">Le Prestige Residency</h1><p style="margin: 5px 0;">Branch: ${b.branch}</p></div>
-          <div class="text-right"><h2 style="margin: 0; color: #111;">TAX INVOICE</h2><p style="margin: 5px 0;"><strong>Ref:</strong> ${b.referenceNumber}</p><p style="margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p></div>
-        </div>
-        <div class="flex" style="margin-top: 30px;">
-          <div><strong style="color:#555">Billed To:</strong><br><br><strong>${b.guestDetails?.fullName || "N/A"}</strong><br>${b.guestDetails?.email || "N/A"}<br>${b.guestDetails?.phone || "N/A"}</div>
-          <div class="text-right"><strong style="color:#555">Stay Details:</strong><br><br><strong>Check-in:</strong> ${b.checkIn}<br><strong>Check-out:</strong> ${b.checkOut}<br><strong>Guests:</strong> ${b.adults} Adults, ${b.children} Children</div>
-        </div>
-        <table>
-          <tr><th>Description</th><th>Type</th><th>Total Amount</th></tr>
-          <tr><td>Room Reservation</td><td>${b.roomType} Room</td><td>Rs. ${(b.totalPrice || 0).toLocaleString()}</td></tr>
-        </table>
-        <p style="margin-top: 15px; font-size: 12px; color: #777;">Transaction ID: ${b.razorpayPaymentId || "SIMULATED / OFFLINE"} <br/>Special Note: ${b.specialRequest || "None"}</p>
-        <p style="margin-top: 50px; text-align: center; font-weight: bold; font-family: serif; font-size: 18px;">Thank you for staying with Le Prestige Residency!</p>
-        <script>window.print(); setTimeout(() => window.close(), 1000);</script>
-      </body></html>
-    `);
-    printWindow.document.close();
-  };
-
   return (
     <main className="w-full bg-[#F8F4EE] min-h-screen pt-28 pb-20 text-[var(--lp-heading)]">
       
@@ -256,7 +226,7 @@ export default function Admin() {
                 <div className="flex flex-col gap-0.5 text-xs text-slate-300">
                   <span>📍 {newBookingAlert.branch} • {newBookingAlert.roomType} Room</span>
                   <span>📅 {newBookingAlert.checkIn} to {newBookingAlert.checkOut}</span>
-                  <span className="text-green-300 mt-1 font-semibold">₹{(newBookingAlert.totalPrice || 0).toLocaleString()} Paid</span>
+                  <span className="text-green-300 mt-1 font-semibold">Status: {newBookingAlert.status || "CONFIRMED"}</span>
                 </div>
               </div>
               <button onClick={() => setNewBookingAlert(null)} className="text-slate-400 hover:text-white">✕</button>
@@ -414,20 +384,8 @@ export default function Admin() {
         {/* TAB 1: OVERVIEW & ANALYTICS */}
         {activeTab === "OVERVIEW" && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               
-              <div className="bg-white p-6 rounded-2xl border border-[var(--lp-border)] shadow-sm flex items-center gap-5">
-                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                  <IndianRupee size={24} />
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-[var(--lp-muted)] font-semibold">
-                    {selectedBranch === "ALL" ? "Total Revenue" : `${selectedBranch} Revenue`}
-                  </p>
-                  <p className="text-2xl font-bold font-serif text-[var(--lp-heading)]">₹{totalRevenue.toLocaleString()}</p>
-                </div>
-              </div>
-
               <div className="bg-white p-6 rounded-2xl border border-[var(--lp-border)] shadow-sm flex items-center gap-5">
                 <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
                   <CalendarCheck size={24} />
@@ -507,7 +465,6 @@ export default function Admin() {
                       <th className="p-4">Guest</th>
                       <th className="p-4">Room</th>
                       <th className="p-4">Dates</th>
-                      <th className="p-4">Amount</th>
                       <th className="p-4">Status</th>
                     </tr>
                   </thead>
@@ -527,7 +484,6 @@ export default function Admin() {
                         <td className="p-4 font-medium">{b.guestDetails?.fullName || "N/A"}</td>
                         <td className="p-4">{b.roomType} Room</td>
                         <td className="p-4 text-xs text-[var(--lp-muted)]">{b.checkIn} to {b.checkOut}</td>
-                        <td className="p-4 font-semibold">₹{(b.totalPrice || 0).toLocaleString()}</td>
                         <td className="p-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             b.status === "CONFIRMED" ? "bg-green-100 text-green-700" :
@@ -602,8 +558,8 @@ export default function Admin() {
                       <th className="p-4">Room Type</th>
                       <th className="p-4">Stay Dates</th>
                       <th className="p-4">Guests</th>
-                      <th className="p-4">Amount & Info</th>
-                      <th className="p-4">Actions / Status</th>
+                      <th className="p-4">Notes</th>
+                      <th className="p-4">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--lp-border-light)]">
@@ -626,27 +582,26 @@ export default function Admin() {
                         <td className="p-4 font-medium">{b.roomType} Room</td>
                         <td className="p-4 text-xs text-[var(--lp-muted)]">{b.checkIn} → {b.checkOut}</td>
                         <td className="p-4 text-xs">{b.adults} Adults, {b.children} Kids</td>
-                        <td className="p-4">
-                          <p className="font-semibold text-green-700">₹{(b.totalPrice || 0).toLocaleString()}</p>
-                          {b.razorpayPaymentId && <p className="text-[10px] text-[var(--lp-muted)] font-mono mt-0.5 truncate max-w-[120px]" title="Transaction ID">Txn: {b.razorpayPaymentId}</p>}
-                          {b.specialRequest && <p className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded mt-1 line-clamp-2" title={b.specialRequest}>Note: {b.specialRequest}</p>}
+                        <td className="p-4 text-xs">
+                          {b.specialRequest ? (
+                            <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-medium" title={b.specialRequest}>
+                              {b.specialRequest}
+                            </span>
+                          ) : (
+                            <span className="text-[var(--lp-muted)]">None</span>
+                          )}
                         </td>
                         <td className="p-4">
-                          <div className="flex flex-col gap-2">
-                            <select
-                              value={b.status}
-                              onChange={(e) => handleStatusChange(b.id, e.target.value as BookingRecord["status"])}
-                              className="bg-[#F8F4EE] border border-[var(--lp-border)] rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
-                            >
-                              <option value="CONFIRMED">CONFIRMED</option>
-                              <option value="CHECKED_IN">CHECKED IN</option>
-                              <option value="CHECKED_OUT">CHECKED OUT</option>
-                              <option value="CANCELLED">CANCELLED</option>
-                            </select>
-                            <button onClick={() => handlePrintInvoice(b)} className="text-xs bg-white border border-[var(--lp-border)] hover:bg-slate-50 px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 font-semibold text-[var(--lp-heading)] shadow-sm">
-                              🖨️ Print Invoice
-                            </button>
-                          </div>
+                          <select
+                            value={b.status}
+                            onChange={(e) => handleStatusChange(b.id, e.target.value as BookingRecord["status"])}
+                            className="bg-[#F8F4EE] border border-[var(--lp-border)] rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none cursor-pointer"
+                          >
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="CHECKED_IN">CHECKED IN</option>
+                            <option value="CHECKED_OUT">CHECKED OUT</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                          </select>
                         </td>
                       </tr>
                     ))}
