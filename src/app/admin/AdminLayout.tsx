@@ -28,31 +28,44 @@ export default function AdminLayout() {
   const location = useLocation();
 
   useEffect(() => {
-    const unsubscribe = auth?.onAuthStateChanged(async (user) => {
-      if (user && db) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.role === "admin") {
-              setAdminData({ ...data, email: user.email });
-              setLoading(false);
-            } else {
-              auth?.signOut();
-              navigate("/admin-login");
-            }
-          } else {
-            auth?.signOut();
-            navigate("/admin-login");
-          }
-        } catch (error) {
-          console.error("Admin verification failed", error);
-          navigate("/admin-login");
-        }
-      } else {
-        navigate("/admin-login");
+    const checkAuth = async () => {
+      const isSessionAuth = sessionStorage.getItem("lp_admin_session") === "authenticated";
+      const sessionBranch = sessionStorage.getItem("lp_admin_branch") || "Pondy";
+      const sessionUser = sessionStorage.getItem("lp_admin_user") || "leprestigeresidency@gmail.com";
+
+      if (isSessionAuth) {
+        setAdminData({
+          role: "admin",
+          branchId: sessionBranch,
+          email: sessionUser.includes("@") ? sessionUser : `${sessionUser}@leprestige.com`
+        });
+        setLoading(false);
+        return;
       }
+
+      if (auth?.currentUser && db) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+          if (userDoc.exists() && userDoc.data().role === "admin") {
+            setAdminData({ ...userDoc.data(), email: auth.currentUser.email });
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // If not authenticated via session or Firebase Auth, redirect to login
+      setLoading(false);
+      navigate("/admin-login", { replace: true });
+    };
+
+    const unsubscribe = auth?.onAuthStateChanged(() => {
+      checkAuth();
     });
+
+    checkAuth();
 
     return () => unsubscribe && unsubscribe();
   }, [navigate]);
@@ -62,9 +75,11 @@ export default function AdminLayout() {
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    const { auth, db } = await import("@/firebase/config");
-    if (auth) await auth.signOut();
-    navigate("/admin-login");
+    sessionStorage.removeItem("lp_admin_session");
+    sessionStorage.removeItem("lp_admin_branch");
+    sessionStorage.removeItem("lp_admin_user");
+    if (auth) await auth.signOut().catch(() => {});
+    navigate("/admin-login", { replace: true });
   };
 
   if (loading) {
