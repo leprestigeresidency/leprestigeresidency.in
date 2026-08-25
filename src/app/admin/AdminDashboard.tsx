@@ -102,45 +102,6 @@ export default function AdminDashboard() {
     };
   }, [branchId, dateFilter]);
 
-  const handleSeedMockData = async () => {
-    if (!db || !branchId) return;
-    setLoading(true);
-    try {
-      const { addDoc, serverTimestamp } = await import("firebase/firestore");
-      const todayStr = new Date().toISOString().split("T")[0];
-      const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
-      const nextWeek = new Date(Date.now() + 86400000 * 7).toISOString().split("T")[0];
-
-      // Add dummy bookings
-      const mockBookings = [
-        { bookingId: "LP-101", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Rajesh Kumar", email: "rajesh@gmail.com", phone: "9876543210" }, roomType: "Deluxe", status: "Confirmed" },
-        { bookingId: "LP-102", checkIn: todayStr, checkOut: tomorrow, guestDetails: { fullName: "Anita Desai", email: "anita@gmail.com", phone: "9876543211" }, roomType: "Twin", status: "Checked In" },
-        { bookingId: "LP-103", checkIn: tomorrow, checkOut: nextWeek, guestDetails: { fullName: "John Smith", email: "john@gmail.com", phone: "9876543212" }, roomType: "Suite", status: "Reserved" },
-      ];
-
-      for (let b of mockBookings) {
-        await addDoc(collection(db, "bookings"), { ...b, branchId, createdAt: serverTimestamp() });
-      }
-
-      // Add dummy rooms
-      const mockRooms = [
-        { roomNumber: "101", name: "Premium King", type: "Deluxe", status: "Occupied" },
-        { roomNumber: "102", name: "Premium King", type: "Deluxe", status: "Available" },
-        { roomNumber: "201", name: "Twin Special", type: "Twin", status: "Reserved" },
-      ];
-
-      for (let r of mockRooms) {
-        await addDoc(collection(db, "rooms"), { ...r, branchId, active: true });
-      }
-      
-    } catch (e) {
-      console.error(e);
-      alert("Failed to create dummy data.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return <div className="text-center p-8 text-[#64748B]">Loading dashboard data...</div>;
   }
@@ -148,18 +109,8 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       
-      {/* Date Filter & Seed Tools */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          {stats.totalBookings === 0 && (
-             <button 
-               onClick={handleSeedMockData}
-               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow shadow-emerald-600/20"
-             >
-               + Auto-Generate Demo Data
-             </button>
-          )}
-        </div>
+      {/* Date Filter */}
+      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
         <select 
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}

@@ -113,20 +113,7 @@ export class AdminService {
       }
     }
 
-    return [
-      // Pondicherry Branch Rooms
-      { id: "pdy-101", roomNumber: "PDY-101", branch: "Pondicherry", name: "Deluxe Room", type: "Deluxe", basePrice: 3000, status: "AVAILABLE", features: ["King Bed", "Wi-Fi", "AC"] },
-      { id: "pdy-102", roomNumber: "PDY-102", branch: "Pondicherry", name: "Deluxe Room", type: "Deluxe", basePrice: 3000, status: "OCCUPIED", features: ["King Bed", "Wi-Fi", "AC"] },
-      { id: "pdy-201", roomNumber: "PDY-201", branch: "Pondicherry", name: "Luxury Twin Room", type: "Twin", basePrice: 3500, status: "AVAILABLE", features: ["Twin Beds", "Wi-Fi", "AC"] },
-      { id: "pdy-202", roomNumber: "PDY-202", branch: "Pondicherry", name: "Luxury Twin Room", type: "Twin", basePrice: 3500, status: "CLEANING", features: ["Twin Beds", "Wi-Fi", "AC"] },
-      { id: "pdy-301", roomNumber: "PDY-301", branch: "Pondicherry", name: "Presidential Suite", type: "Suite", basePrice: 6500, status: "OCCUPIED", features: ["Jacuzzi", "Balcony", "Butler"] },
-      
-      // Tindivanam Branch Rooms
-      { id: "tdv-101", roomNumber: "TDV-101", branch: "Tindivanam", name: "Deluxe Room", type: "Deluxe", basePrice: 2800, status: "AVAILABLE", features: ["King Bed", "Wi-Fi", "AC"] },
-      { id: "tdv-102", roomNumber: "TDV-102", branch: "Tindivanam", name: "Executive Suite", type: "Suite", basePrice: 5200, status: "OCCUPIED", features: ["King Bed", "Living Room", "Smart TV"] },
-      { id: "tdv-201", roomNumber: "TDV-201", branch: "Tindivanam", name: "Royal Twin Room", type: "Twin", basePrice: 3200, status: "AVAILABLE", features: ["Twin Beds", "High Speed Internet", "AC"] },
-      { id: "tdv-202", roomNumber: "TDV-202", branch: "Tindivanam", name: "Heritage Villa", type: "Villa", basePrice: 7000, status: "MAINTENANCE", features: ["Private Garden", "Jacuzzi", "Breakfast Included"] },
-    ];
+    return [];
   }
 
   /**
