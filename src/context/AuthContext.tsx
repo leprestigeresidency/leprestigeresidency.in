@@ -1,6 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { auth, googleProvider, signInWithPopup } from "@/firebase/config"
-import { onAuthStateChanged, User, signOut as firebaseSignOut, FacebookAuthProvider } from "firebase/auth"
+import { auth, googleProvider } from "@/firebase/config"
+import {
+  onAuthStateChanged,
+  User,
+  signOut as firebaseSignOut,
+  FacebookAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
+} from "firebase/auth"
 
 interface AuthContextType {
   user: User | null
@@ -24,6 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    // Process redirect result if signInWithRedirect was used
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          setUser(result.user)
+        }
+      })
+      .catch((err) => {
+        console.error("Firebase Redirect Auth Error:", err)
+      })
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser)
       setLoading(false)
@@ -36,9 +55,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!auth) {
       throw new Error("Firebase Auth is not initialized.")
     }
-    const result = await signInWithPopup(auth, googleProvider)
-    if (result?.user) {
-      setUser(result.user)
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      if (result?.user) {
+        setUser(result.user)
+      }
+    } catch (error: any) {
+      // If popup is blocked by browser, try redirect flow
+      if (error?.code === "auth/popup-blocked") {
+        console.warn("Popup blocked by browser. Attempting redirect sign-in...")
+        await signInWithRedirect(auth, googleProvider)
+        return
+      }
+      throw error
     }
   }
 
@@ -47,9 +76,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Firebase Auth is not initialized.")
     }
     const facebookProvider = new FacebookAuthProvider()
-    const result = await signInWithPopup(auth, facebookProvider)
-    if (result?.user) {
-      setUser(result.user)
+    try {
+      const result = await signInWithPopup(auth, facebookProvider)
+      if (result?.user) {
+        setUser(result.user)
+      }
+    } catch (error: any) {
+      if (error?.code === "auth/popup-blocked") {
+        await signInWithRedirect(auth, facebookProvider)
+        return
+      }
+      throw error
     }
   }
 
@@ -83,3 +120,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export const useAuth = () => useContext(AuthContext)
+

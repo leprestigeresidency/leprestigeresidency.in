@@ -28,8 +28,14 @@ export default function AuthStep({ onNext }: AuthStepProps) {
       await signInWithGoogle()
     } catch (error: any) {
       console.error("Google Sign-In Error:", error)
-      if (error?.code === "auth/popup-closed-by-user") {
-        setErrorMsg("Sign-in popup was closed. Please try again.")
+      if (error?.code === "auth/unauthorized-domain") {
+        setErrorMsg(
+          "Firebase Auth Domain Restriction: Your website domain is not added to Authorized Domains in Firebase Console. Please add 'leprestigeresidency.in' in Firebase Console > Authentication > Settings > Authorized domains. You can continue with Email or Guest below."
+        )
+      } else if (error?.code === "auth/popup-closed-by-user") {
+        setErrorMsg("Sign-in popup was closed before completing. Please try again.")
+      } else if (error?.code === "auth/popup-blocked") {
+        setErrorMsg("Popup was blocked by your browser. Please allow popups or continue with Email / Guest.")
       } else {
         setErrorMsg(error?.message || "Google Sign-In could not be completed. You can continue with Email or Guest.")
       }
@@ -45,7 +51,11 @@ export default function AuthStep({ onNext }: AuthStepProps) {
       await signInWithFacebook()
     } catch (error: any) {
       console.error("Facebook Sign-In Error:", error)
-      if (error?.code === "auth/popup-closed-by-user") {
+      if (error?.code === "auth/unauthorized-domain") {
+        setErrorMsg(
+          "Firebase Auth Domain Restriction: Your website domain is not authorized in Firebase Console. Please add your domain to Authorized domains. You can continue with Email or Guest."
+        )
+      } else if (error?.code === "auth/popup-closed-by-user") {
         setErrorMsg("Facebook sign-in popup was closed. Please try again.")
       } else {
         setErrorMsg(error?.message || "Facebook Sign-In could not be completed. You can continue with Email or Guest.")
