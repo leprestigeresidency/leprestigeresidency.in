@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { auth, db } from "@/firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, onSnapshot } from "firebase/firestore";
 import { 
   LayoutDashboard, 
   CalendarCheck, 
@@ -24,6 +24,7 @@ export default function AdminLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [adminData, setAdminData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [liveNotifs, setLiveNotifs] = useState<any[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,7 +57,6 @@ export default function AdminLayout() {
         }
       }
 
-      // If not authenticated via session or Firebase Auth, redirect to login
       setLoading(false);
       navigate("/admin-login", { replace: true });
     };
@@ -69,6 +69,46 @@ export default function AdminLayout() {
 
     return () => unsubscribe && unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!db || !adminData?.branchId) return;
+
+    const unsub = onSnapshot(collection(db, "bookings"), (snapshot) => {
+      const list: any[] = [];
+      snapshot.forEach((doc) => {
+        const d = doc.data();
+        const bBranch = (d.branchId || d.branch || "").toString().toLowerCase();
+        const aBranch = (adminData.branchId || "").toString().toLowerCase();
+
+        const matchesBranch = 
+          bBranch === aBranch ||
+          (aBranch.includes("pond") && (bBranch.includes("pond") || bBranch.includes("pudu"))) ||
+          (aBranch.includes("tind") && bBranch.includes("tind")) ||
+          !d.branchId;
+
+        if (matchesBranch) {
+          const guestName = d.guestDetails?.fullName || "Guest";
+          const rawTime = d.createdAt?.toMillis ? d.createdAt.toMillis() : (new Date(d.createdAt).getTime() || Date.now());
+          const diffMins = Math.max(0, Math.floor((Date.now() - rawTime) / 60000));
+          const timeText = diffMins < 1 ? "JUST NOW" : diffMins < 60 ? `${diffMins} MINS AGO` : `${Math.floor(diffMins/60)} HRS AGO`;
+
+          list.push({
+            id: doc.id,
+            guestName,
+            roomType: d.roomType || "Room",
+            ref: d.referenceNumber || doc.id.slice(0, 6).toUpperCase(),
+            rawTime,
+            timeText,
+          });
+        }
+      });
+
+      list.sort((a, b) => b.rawTime - a.rawTime);
+      setLiveNotifs(list);
+    });
+
+    return () => unsub();
+  }, [adminData?.branchId]);
 
   useEffect(() => {
     setIsSidebarOpen(false);
@@ -249,7 +289,9 @@ export default function AdminLayout() {
                   className={`transition-colors cursor-pointer relative ${showNotifications ? 'text-blue-600' : 'text-slate-500 hover:text-blue-600'}`}
                 >
                   <Bell size={20} />
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                  {liveNotifs.length > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                  )}
                 </button>
                 
                 {/* NOTIFICATIONS DROPDOWN */}
@@ -259,20 +301,43 @@ export default function AdminLayout() {
                     <div className="absolute right-0 mt-4 w-72 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                       <div className="bg-slate-50 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                         <span className="font-bold text-slate-900 text-sm">Notifications</span>
-                        <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">1 NEW</span>
+                        <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {liveNotifs.length} NEW
+                        </span>
                       </div>
                       <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-50">
-                        <div className="p-4 bg-blue-50/50 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><CalendarDays size={14}/></div>
-                          <div>
-                            <p className="text-sm text-slate-900 font-semibold mb-0.5">New Booking Received</p>
-                            <p className="text-xs text-slate-500 line-clamp-2">Rajesh Kumar reserved Deluxe Room.</p>
-                            <p className="text-[10px] text-blue-600 font-bold mt-1 uppercase">10 mins ago</p>
+                        {liveNotifs.length > 0 ? (
+                          liveNotifs.slice(0, 5).map((n) => (
+                            <div 
+                              key={n.id}
+                              onClick={() => { setShowNotifications(false); navigate("/admin/bookings"); }}
+                              className="p-4 bg-blue-50/40 hover:bg-blue-50 transition-colors cursor-pointer flex gap-3"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                <CalendarDays size={14}/>
+                              </div>
+                              <div>
+                                <p className="text-sm text-slate-900 font-semibold mb-0.5">New Booking Received</p>
+                                <p className="text-xs text-slate-600 line-clamp-2">
+                                  <strong>{n.guestName}</strong> reserved {n.roomType}.
+                                </p>
+                                <p className="text-[10px] text-blue-600 font-bold mt-1 uppercase">{n.timeText}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-6 text-center text-slate-400 text-xs font-medium">
+                            No notifications available
                           </div>
-                        </div>
+                        )}
                       </div>
                       <div className="p-3 border-t border-slate-100 text-center">
-                        <button className="text-blue-600 text-xs font-semibold hover:underline">View All Notifications</button>
+                        <button 
+                          onClick={() => { setShowNotifications(false); navigate("/admin/notifications"); }}
+                          className="text-blue-600 text-xs font-semibold hover:underline"
+                        >
+                          View All Notifications
+                        </button>
                       </div>
                     </div>
                   </>
