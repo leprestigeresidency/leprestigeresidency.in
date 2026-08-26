@@ -28,18 +28,48 @@ export default function AdminLogin() {
       const cleanUsername = username.trim().toLowerCase();
       const cleanPassword = password.trim();
 
-      // Branch-specific preset password validation
+      // Branch-specific password validation
       const isPondy = branch === "Pondy" || branch === "Pondicherry";
       const isTindivanam = branch === "Tindivanam";
+      const branchKey = isPondy ? "pondy" : "tindivanam";
 
-      const validPondyPass = isPondy && (cleanPassword === "Le@pondy123" || cleanPassword === "Admin123!" || cleanPassword === "leprestigeresidency");
-      const validTindivanamPass = isTindivanam && (cleanPassword === "Le@tindivanam123" || cleanPassword === "Admin123!" || cleanPassword === "leprestigeresidency");
-
-      if (isPondy && cleanPassword === "Le@tindivanam123") {
-        throw new Error("Invalid password for Pondy branch. Use Le@pondy123.");
+      // 1. LocalStorage custom password check
+      const customLocalPass = localStorage.getItem(`lp_custom_pass_${branchKey}`);
+      
+      // 2. Firestore stored password check
+      let customFirestorePass = "";
+      if (db) {
+        try {
+          const passSnap = await getDoc(doc(db, "branch_passwords", branchKey));
+          if (passSnap.exists()) {
+            customFirestorePass = passSnap.data()?.password || "";
+          }
+        } catch {
+          // ignore error
+        }
       }
-      if (isTindivanam && cleanPassword === "Le@pondy123") {
-        throw new Error("Invalid password for Tindivanam branch. Use Le@tindivanam123.");
+
+      const validPondyPass = isPondy && (
+        cleanPassword === customLocalPass ||
+        cleanPassword === customFirestorePass ||
+        cleanPassword === "Le@pondy123" || 
+        cleanPassword === "Admin123!" || 
+        cleanPassword === "leprestigeresidency"
+      );
+
+      const validTindivanamPass = isTindivanam && (
+        cleanPassword === customLocalPass ||
+        cleanPassword === customFirestorePass ||
+        cleanPassword === "Le@tindivanam123" || 
+        cleanPassword === "Admin123!" || 
+        cleanPassword === "leprestigeresidency"
+      );
+
+      if (isPondy && cleanPassword === "Le@tindivanam123" && !customLocalPass) {
+        throw new Error("Invalid password for Pondy branch.");
+      }
+      if (isTindivanam && cleanPassword === "Le@pondy123" && !customLocalPass) {
+        throw new Error("Invalid password for Tindivanam branch.");
       }
 
       const isPresetAdmin = 
