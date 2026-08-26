@@ -10,6 +10,7 @@ export default function AdminBookings() {
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function AdminBookings() {
 
   const handleUpdateStatus = async (bookingId: string, newStatus: string) => {
     setActionLoading(true);
+    setActiveMenuId(null);
     try {
       if (db) {
         await updateDoc(doc(db, "bookings", bookingId), { status: newStatus });
@@ -76,11 +78,12 @@ export default function AdminBookings() {
   const handleDeleteBooking = async (bookingId: string) => {
     if (!window.confirm("Are you sure you want to delete this reservation?")) return;
     setActionLoading(true);
+    setActiveMenuId(null);
     try {
       if (db) {
         await deleteDoc(doc(db, "bookings", bookingId));
         showToast("Reservation deleted successfully.");
-        setSelectedBooking(null);
+        if (selectedBooking?.id === bookingId) setSelectedBooking(null);
       }
     } catch (e: any) {
       console.error("Error deleting booking:", e);
@@ -91,6 +94,7 @@ export default function AdminBookings() {
   };
 
   const handlePrintInvoice = (b: any) => {
+    setActiveMenuId(null);
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
@@ -103,7 +107,6 @@ export default function AdminBookings() {
             body { font-family: Arial, sans-serif; padding: 40px; color: #1e293b; }
             .header { border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
             .logo { font-size: 24px; font-weight: bold; color: #0f172a; }
-            .badge { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }
             .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
             .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
             .total { text-align: right; font-size: 20px; font-weight: bold; margin-top: 30px; color: #2563eb; }
@@ -177,6 +180,11 @@ export default function AdminBookings() {
         </div>
       )}
 
+      {/* Backdrop for closing active menu */}
+      {activeMenuId && (
+        <div className="fixed inset-0 z-30 bg-transparent" onClick={() => setActiveMenuId(null)}></div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -247,14 +255,75 @@ export default function AdminBookings() {
                       {b.status || "CONFIRMED"}
                     </span>
                   </td>
-                  {/* ACTIONS */}
-                  <td className="px-6 py-4 text-right">
+                  {/* ACTIONS BUTTON & POPOVER */}
+                  <td className="px-6 py-4 text-right relative">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); setSelectedBooking(b); }} 
-                      className="text-slate-500 hover:text-blue-600 bg-white hover:bg-slate-50 p-2 rounded-lg border border-slate-200 transition-all shadow-sm flex items-center gap-1 text-xs font-semibold ml-auto"
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setActiveMenuId(activeMenuId === b.id ? null : b.id); 
+                      }} 
+                      className="w-8 h-8 rounded-full border border-slate-200 bg-white hover:bg-slate-100 hover:border-slate-300 text-slate-600 flex items-center justify-center transition-all shadow-sm ml-auto cursor-pointer"
+                      title="Click for options"
                     >
-                      <MoreHorizontal size={16} /> Options
+                      <MoreHorizontal size={18} />
                     </button>
+
+                    {/* POPMENU DROPDOWN */}
+                    {activeMenuId === b.id && (
+                      <div 
+                        className="absolute right-6 top-12 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-40 overflow-hidden text-left animate-in fade-in zoom-in-95"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          Options - #{b.referenceNumber || b.id.slice(0, 6)}
+                        </div>
+                        <div className="py-1">
+                          <button 
+                            onClick={() => { setActiveMenuId(null); setSelectedBooking(b); }}
+                            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2"
+                          >
+                            <User size={14} /> View Details
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(b.id, "CONFIRMED")}
+                            className="w-full px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-2"
+                          >
+                            <CheckCircle2 size={14} /> Set Confirmed
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(b.id, "CHECKED IN")}
+                            className="w-full px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 flex items-center gap-2"
+                          >
+                            <Calendar size={14} /> Set Checked In
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(b.id, "CHECKED OUT")}
+                            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center gap-2"
+                          >
+                            <CheckCircle2 size={14} /> Set Checked Out
+                          </button>
+                          <button 
+                            onClick={() => handleUpdateStatus(b.id, "CANCELLED")}
+                            className="w-full px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-50 flex items-center gap-2"
+                          >
+                            <X size={14} /> Cancel Booking
+                          </button>
+                          <div className="border-t border-slate-100 my-1"></div>
+                          <button 
+                            onClick={() => handlePrintInvoice(b)}
+                            className="w-full px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center gap-2"
+                          >
+                            <Printer size={14} /> Print Receipt
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteBooking(b.id)}
+                            className="w-full px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -322,28 +391,28 @@ export default function AdminBookings() {
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleUpdateStatus(selectedBooking.id, "CONFIRMED")}
-                    className="px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-all text-center disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-all text-center disabled:opacity-50 cursor-pointer"
                   >
                     Confirm Booking
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleUpdateStatus(selectedBooking.id, "CHECKED IN")}
-                    className="px-3 py-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-all text-center disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-bold transition-all text-center disabled:opacity-50 cursor-pointer"
                   >
                     Check In Guest
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleUpdateStatus(selectedBooking.id, "CHECKED OUT")}
-                    className="px-3 py-2 rounded-lg border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all text-center disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold transition-all text-center disabled:opacity-50 cursor-pointer"
                   >
                     Check Out Guest
                   </button>
                   <button 
                     disabled={actionLoading}
                     onClick={() => handleUpdateStatus(selectedBooking.id, "CANCELLED")}
-                    className="px-3 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold transition-all text-center disabled:opacity-50"
+                    className="px-3 py-2 rounded-lg border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold transition-all text-center disabled:opacity-50 cursor-pointer"
                   >
                     Cancel Booking
                   </button>
@@ -354,14 +423,14 @@ export default function AdminBookings() {
               <div className="flex gap-3 pt-2 border-t border-slate-100">
                 <button 
                   onClick={() => handlePrintInvoice(selectedBooking)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Printer size={16} /> Print Receipt
                 </button>
                 <button 
                   onClick={() => handleDeleteBooking(selectedBooking.id)}
                   disabled={actionLoading}
-                  className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                  className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   <Trash2 size={16} /> Delete
                 </button>
