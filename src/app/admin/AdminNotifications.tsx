@@ -15,31 +15,37 @@ export default function AdminNotifications() {
     if (!db || !adminData?.branchId) return;
 
     // Listen to real-time bookings to construct notifications feed
-    const q = query(
-      collection(db, "bookings"),
-      where("branchId", "==", adminData.branchId)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "bookings"), (snapshot) => {
       const notifs: any[] = [];
 
       snapshot.forEach(doc => {
         const d = doc.data();
-        const guestName = d.guestDetails?.fullName || "Guest";
-        const bookingId = d.bookingId || doc.id.slice(0, 6).toUpperCase();
-        const timeStr = d.createdAt ? new Date(d.createdAt.toMillis ? d.createdAt.toMillis() : d.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recently";
+        const bBranch = (d.branchId || d.branch || "").toString().toLowerCase();
+        const aBranch = (adminData?.branchId || "").toString().toLowerCase();
 
-        // Notification 1: New Booking
-        notifs.push({
-          id: `notif-booking-${doc.id}`,
-          type: "New Booking",
-          title: "New Reservation Received",
-          description: `${guestName} reserved ${d.roomType || "Room"} for ${d.checkIn || "upcoming dates"}.`,
-          bookingId: bookingId,
-          date: timeStr,
-          timestamp: d.createdAt?.toMillis ? d.createdAt.toMillis() : 0,
-          targetRoute: "/admin/bookings"
-        });
+        const matchesBranch = 
+          bBranch === aBranch ||
+          (aBranch.includes("pond") && (bBranch.includes("pond") || bBranch.includes("pudu"))) ||
+          (aBranch.includes("tind") && bBranch.includes("tind")) ||
+          !d.branchId;
+
+        if (matchesBranch) {
+          const guestName = d.guestDetails?.fullName || "Guest";
+          const bookingId = d.referenceNumber || d.bookingId || doc.id.slice(0, 6).toUpperCase();
+          const rawTime = d.createdAt?.toMillis ? d.createdAt.toMillis() : (new Date(d.createdAt).getTime() || Date.now());
+          const timeStr = new Date(rawTime).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+          notifs.push({
+            id: `notif-booking-${doc.id}`,
+            type: "New Booking",
+            title: "New Reservation Received",
+            description: `${guestName} reserved ${d.roomType || "Room"} for ${d.checkIn ? d.checkIn.split("T")[0] : "upcoming dates"}.`,
+            bookingId: bookingId,
+            date: timeStr,
+            timestamp: rawTime,
+            targetRoute: "/admin/bookings"
+          });
+        }
       });
 
       // Sort newest first

@@ -13,22 +13,28 @@ export default function AdminBookings() {
   useEffect(() => {
     if (!db || !adminData?.branchId) return;
 
-    // Fetch exclusively from this branch securely
-    const q = query(
-      collection(db, "bookings"),
-      where("branchId", "==", adminData.branchId)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "bookings"), (snapshot) => {
       const data: any[] = [];
       snapshot.forEach(doc => {
-        data.push({ id: doc.id, ...doc.data() });
+        const b = { id: doc.id, ...doc.data() } as any;
+        const bBranch = (b.branchId || b.branch || "").toString().toLowerCase();
+        const aBranch = (adminData?.branchId || "").toString().toLowerCase();
+
+        const matchesBranch = 
+          bBranch === aBranch ||
+          (aBranch.includes("pond") && (bBranch.includes("pond") || bBranch.includes("pudu"))) ||
+          (aBranch.includes("tind") && bBranch.includes("tind")) ||
+          !b.branchId;
+
+        if (matchesBranch) {
+          data.push(b);
+        }
       });
       
-      // Client-side sort by createdAt (to avoid missing composite index crashes)
+      // Sort client-side by createdAt
       data.sort((a, b) => {
-        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt).getTime() || 0);
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt).getTime() || 0);
         return timeB - timeA;
       });
 

@@ -15,36 +15,42 @@ export default function AdminGuests() {
     if (!db || !adminData?.branchId) return;
 
     // Aggregate guests from bookings for this branch
-    const q = query(
-      collection(db, "bookings"),
-      where("branchId", "==", adminData.branchId)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "bookings"), (snapshot) => {
       const guestMap: Record<string, any> = {};
 
       snapshot.forEach(doc => {
         const data = doc.data();
-        const email = data.guestDetails?.email || data.guestDetails?.phone || doc.id;
-        const name = data.guestDetails?.fullName || "Guest";
-        const amount = Number(data.total) || 0;
+        const bBranch = (data.branchId || data.branch || "").toString().toLowerCase();
+        const aBranch = (adminData?.branchId || "").toString().toLowerCase();
 
-        if (!guestMap[email]) {
-          guestMap[email] = {
-            id: email,
-            name: name,
-            email: data.guestDetails?.email || "N/A",
-            phone: data.guestDetails?.phone || "N/A",
-            totalStays: 1,
-            totalSpent: amount,
-            lastStay: data.checkIn || data.createdAt,
-            status: "Active"
-          };
-        } else {
-          guestMap[email].totalStays += 1;
-          guestMap[email].totalSpent += amount;
-          if (data.checkIn && data.checkIn > guestMap[email].lastStay) {
-            guestMap[email].lastStay = data.checkIn;
+        const matchesBranch = 
+          bBranch === aBranch ||
+          (aBranch.includes("pond") && (bBranch.includes("pond") || bBranch.includes("pudu"))) ||
+          (aBranch.includes("tind") && bBranch.includes("tind")) ||
+          !data.branchId;
+
+        if (matchesBranch) {
+          const email = data.guestDetails?.email || data.guestDetails?.phone || doc.id;
+          const name = data.guestDetails?.fullName || "Guest";
+          const amount = Number(data.total) || 2199;
+
+          if (!guestMap[email]) {
+            guestMap[email] = {
+              id: email,
+              name: name,
+              email: data.guestDetails?.email || "N/A",
+              phone: data.guestDetails?.phone || "N/A",
+              totalStays: 1,
+              totalSpent: amount,
+              lastStay: data.checkIn ? data.checkIn.split("T")[0] : "Recent",
+              status: "Active"
+            };
+          } else {
+            guestMap[email].totalStays += 1;
+            guestMap[email].totalSpent += amount;
+            if (data.checkIn && data.checkIn > guestMap[email].lastStay) {
+              guestMap[email].lastStay = data.checkIn.split("T")[0];
+            }
           }
         }
       });

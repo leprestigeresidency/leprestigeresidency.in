@@ -52,11 +52,7 @@ export default function AdminDashboard() {
     });
 
     // 2. Bookings
-    const qBookings = query(
-      collection(db, "bookings"), 
-      where("branchId", "==", branchId)
-    );
-    const unsubBookings = onSnapshot(qBookings, (snapshot) => {
+    const unsubBookings = onSnapshot(collection(db, "bookings"), (snapshot) => {
       let tBookings = 0;
       let checkIns = 0;
       let checkOuts = 0;
@@ -66,11 +62,26 @@ export default function AdminDashboard() {
 
       snapshot.forEach(doc => {
         const b = { id: doc.id, ...doc.data() } as any;
-        allBookings.push(b);
+        const bBranch = (b.branchId || b.branch || "").toString().toLowerCase();
+        const aBranch = (branchId || "").toString().toLowerCase();
+
+        const matchesBranch = 
+          bBranch === aBranch ||
+          (aBranch.includes("pond") && (bBranch.includes("pond") || bBranch.includes("pudu"))) ||
+          (aBranch.includes("tind") && bBranch.includes("tind")) ||
+          !b.branchId; // Fallback if branch unassigned
+
+        if (matchesBranch) {
+          allBookings.push(b);
+        }
       });
 
-      // Sort client-side to avoid Firestore composite index requirement
-      allBookings.sort((a, b) => b.createdAt - a.createdAt);
+      // Client-side sort by createdAt
+      allBookings.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt).getTime() || 0);
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt).getTime() || 0);
+        return timeB - timeA;
+      });
 
       const upcoming: any[] = [];
       const todayList: any[] = [];

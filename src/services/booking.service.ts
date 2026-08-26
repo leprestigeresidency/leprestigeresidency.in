@@ -62,10 +62,23 @@ export class BookingService {
    * Create a new room reservation (via Cloud Function or Direct Firestore fallback)
    */
   static async createBooking(params: CreateBookingParams): Promise<CreateBookingResponse> {
+    const rawBranch = (params.branch || "").trim();
+    const isPondy = 
+      rawBranch === "Pondy" || 
+      rawBranch === "Pondicherry" || 
+      rawBranch === "Puducherry" || 
+      rawBranch.toLowerCase().includes("pondy") || 
+      rawBranch.toLowerCase().includes("pondi") ||
+      rawBranch.toLowerCase().includes("pudu");
+
+    const normalizedBranch = isPondy ? "Pondy" : "Tindivanam";
+    const refNum = `LPR-${Math.floor(100000 + Math.random() * 900000)}`;
+    let docId = `bk-${Date.now()}`;
+
     if (functions) {
       try {
         const createFn = httpsCallable<CreateBookingParams, CreateBookingResponse>(functions, "createBooking");
-        const res = await createFn(params);
+        const res = await createFn({ ...params, branch: normalizedBranch });
         return res.data;
       } catch (error) {
         console.warn("Cloud function createBooking failed, attempting direct Firestore save:", error);
@@ -73,21 +86,38 @@ export class BookingService {
     }
 
     // Direct Firestore fallback
-    const refNum = `LPR-${Math.floor(100000 + Math.random() * 900000)}`;
-    let docId = `bk-${Date.now()}`;
-
     if (db) {
       try {
-        const docRef = await addDoc(collection(db, "bookings"), {
+        const bookingRecord = {
           ...params,
-          branchId: params.branch,
+          branchId: normalizedBranch,
+          branch: normalizedBranch,
           referenceNumber: refNum,
           status: "CONFIRMED",
+          paymentStatus: "PAID",
+          total: params.roomType === "Suite" ? 4499 : params.roomType === "Twin" ? 2799 : 2199,
           createdAt: serverTimestamp(),
-        });
+        };
+
+        const docRef = await addDoc(collection(db, "bookings"), bookingRecord);
         docId = docRef.id;
+
+        // Create explicit real-time Notification alert in Firestore
+        await addDoc(collection(db, "notifications"), {
+          branchId: normalizedBranch,
+          branch: normalizedBranch,
+          type: "New Booking",
+          title: "New Reservation Received",
+          description: `${params.guestDetails?.fullName || "Guest"} reserved ${params.roomType || "Room"} for ${params.checkIn ? params.checkIn.split("T")[0] : "upcoming dates"}.`,
+          bookingId: docId,
+          referenceNumber: refNum,
+          guestName: params.guestDetails?.fullName || "Guest",
+          read: false,
+          createdAt: serverTimestamp(),
+        }).catch((e) => console.warn("Notification write warning:", e));
+
       } catch (err) {
-        console.warn("Direct Firestore booking write skipped or unauthorized, returning local confirmation:", err);
+        console.warn("Direct Firestore booking write error:", err);
       }
     }
 
