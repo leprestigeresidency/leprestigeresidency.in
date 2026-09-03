@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    { "source": "/tourist", "destination": "/index.html" },
-    { "source": "/tourist/thank-you", "destination": "/index.html" },
-    { "source": "/business", "destination": "/index.html" },
-    { "source": "/business/thank-you", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
