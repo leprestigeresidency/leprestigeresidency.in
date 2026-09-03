@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /tourist/thank-you
+Disallow: /business/thank-you
+
+Sitemap: https://leprestigeresidency.in/sitemap.xml
