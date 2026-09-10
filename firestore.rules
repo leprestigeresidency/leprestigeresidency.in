@@ -41,16 +41,6 @@ service cloud.firestore {
       allow update, delete: if hasBranchAccess(resource.data.branchId);
     }
 
-    match /payments/{paymentId} {
-      allow create: if true;
-      allow read, update, delete: if hasBranchAccess(resource.data.branchId);
-    }
-
-    match /invoices/{invoiceId} {
-      allow create: if true;
-      allow read, update, delete: if hasBranchAccess(resource.data.branchId);
-    }
-
     match /notifications/{notificationId} {
       allow create: if true;
       allow read, update, delete: if hasBranchAccess(resource.data.branchId);

@@ -151,6 +151,8 @@ export default function AdminRooms() {
                     <option value="Deluxe">Deluxe</option>
                     <option value="Twin">Twin</option>
                     <option value="Suite">Suite</option>
+                    <option value="Superior">Superior</option>
+                    <option value="Premium">Premium</option>
                   </select>
                 </div>
                 <div>

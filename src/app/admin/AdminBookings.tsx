@@ -377,7 +377,7 @@ export default function AdminBookings() {
                   <p className="font-semibold text-slate-800 mt-1">{formatDateString(selectedBooking.checkIn)} → {formatDateString(selectedBooking.checkOut)}</p>
                 </div>
                 <div>
-                  <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Payment Status</p>
+                  <p className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Status</p>
                   <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getStatusBadgeColors(selectedBooking.status)}`}>
                     {selectedBooking.status || "CONFIRMED"}
                   </span>

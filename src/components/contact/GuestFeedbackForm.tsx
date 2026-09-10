@@ -1,20 +1,22 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, CheckCircle2, AlertCircle } from "lucide-react"
+import { Send, CheckCircle2, AlertCircle, Star } from "lucide-react"
 import FadeUp from "@/components/animations/FadeUp"
 import { db } from "@/firebase/config"
-import { ContactService } from "@/services/contact.service"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 
-export default function ContactForm() {
+export default function GuestFeedbackForm() {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     phone: "",
-    subject: "",
-    message: "",
-    preferredContactMethod: "Email",
+    branch: "Puducherry",
+    stayDate: "",
+    rating: 0,
+    feedback: "",
   })
-
+  
+  const [hoverRating, setHoverRating] = useState(0)
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
 
@@ -23,18 +25,17 @@ export default function ContactForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const handleRating = (r: number) => {
+    if (status !== "idle" && status !== "loading") setStatus("idle")
+    setFormData({ ...formData, rating: r })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Validation
-    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.subject.trim() || !formData.message.trim()) {
+    if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.branch || !formData.stayDate || !formData.rating || !formData.feedback.trim()) {
       setErrorMessage("Please fill out all required fields.")
-      setStatus("error")
-      return
-    }
-
-    if (formData.message.length < 10) {
-      setErrorMessage("Message must be at least 10 characters.")
       setStatus("error")
       return
     }
@@ -46,13 +47,6 @@ export default function ContactForm() {
       return
     }
 
-    const phoneRegex = /^\+?[0-9\s\-()]{7,15}$/
-    if (!phoneRegex.test(formData.phone)) {
-      setErrorMessage("Please enter a valid phone number.")
-      setStatus("error")
-      return
-    }
-
     try {
       setStatus("loading")
       
@@ -60,18 +54,24 @@ export default function ContactForm() {
         throw new Error("Firebase is not properly configured.")
       }
 
-      await ContactService.submitInquiry({
-        name: formData.name,
+      const branchCode = formData.branch === "Puducherry" ? "pondy" : "tindivanam";
+      
+      await addDoc(collection(db, "feedback"), {
+        fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
-        subject: formData.subject,
-        message: `${formData.message} (Preferred contact: ${formData.preferredContactMethod})`,
+        branch: branchCode,
+        stayDate: formData.stayDate,
+        rating: formData.rating,
+        feedback: formData.feedback,
+        status: "New",
+        submittedAt: serverTimestamp(),
       })
 
       setStatus("success")
-      setFormData({ name: "", email: "", phone: "", subject: "", message: "", preferredContactMethod: "Email" })
+      setFormData({ fullName: "", email: "", phone: "", branch: "Puducherry", stayDate: "", rating: 0, feedback: "" })
     } catch (error) {
-      console.error("Error submitting form:", error)
+      console.error("Error submitting feedback:", error)
       setErrorMessage("Something went wrong. Please try again.")
       setStatus("error")
     }
@@ -92,32 +92,32 @@ export default function ContactForm() {
                 style={{ fontFamily: "var(--font-body)", color: "#B98A5C" }}
                 className="text-[11px] tracking-[0.2em] uppercase font-bold mb-6 block"
               >
-                SEND AN ENQUIRY
+                YOUR EXPERIENCE MATTERS
               </span>
               <h2
                 style={{ fontFamily: "var(--font-heading)", color: "#1F1F1F" }}
                 className="text-4xl md:text-5xl lg:text-6xl font-medium mb-8 leading-[1.1]"
               >
-                How Can We <br />
-                Assist You?
+                Guest <br />
+                Feedback
               </h2>
               <p
                 style={{ fontFamily: "var(--font-body)", color: "#6E6E6E" }}
                 className="text-base md:text-lg mb-8 leading-relaxed max-w-md"
               >
-                Tell us what you need and our team will get back to you as soon as possible.
+                We would love to hear about your experience at Le Prestige Residency. Your feedback helps us continue to improve our hospitality.
               </p>
               
               <div className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-[#F8F4EF] border border-[#E8DDD3]">
                 <div className="w-2 h-2 rounded-full bg-[#B98A5C]" />
                 <span style={{ fontFamily: "var(--font-body)", color: "#1F1F1F" }} className="text-sm font-medium">
-                  We value every enquiry and every guest.
+                  We value every guest's opinion.
                 </span>
               </div>
             </FadeUp>
           </div>
 
-          {/* Right: Premium Form */}
+          {/* Right: Form */}
           <div className="w-full lg:w-7/12">
             <FadeUp delay={0.2}>
               <div className="bg-[#FFFFFF] rounded-2xl border border-[#E8DDD3] p-8 md:p-12 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
@@ -135,17 +135,14 @@ export default function ContactForm() {
                         <CheckCircle2 size={40} className="text-[#2E7D32]" strokeWidth={1.5} />
                       </div>
                       <h3 style={{ fontFamily: "var(--font-heading)" }} className="text-3xl text-[#1F1F1F] mb-4">
-                        Message Sent Successfully
+                        Thank you for sharing your feedback with us.
                       </h3>
-                      <p style={{ fontFamily: "var(--font-body)" }} className="text-[#6E6E6E] text-base leading-relaxed max-w-md mx-auto mb-8">
-                        Thank you for reaching out to Le Prestige Residency. Our team will get back to you shortly.
-                      </p>
                       <button
                         onClick={() => setStatus("idle")}
                         style={{ fontFamily: "var(--font-body)" }}
-                        className="text-[#1F1F1F] text-xs uppercase tracking-widest font-semibold border-b border-[#E8DDD3] pb-1 hover:border-[#B98A5C] hover:text-[#B98A5C] transition-colors duration-300"
+                        className="text-[#1F1F1F] text-xs uppercase tracking-widest font-semibold border-b border-[#E8DDD3] pb-1 hover:border-[#B98A5C] hover:text-[#B98A5C] transition-colors duration-300 mt-8"
                       >
-                        Send Another Message
+                        Submit Another Response
                       </button>
                     </motion.div>
                   ) : (
@@ -162,8 +159,8 @@ export default function ContactForm() {
                           <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Full Name *</label>
                           <input
                             type="text"
-                            name="name"
-                            value={formData.name}
+                            name="fullName"
+                            value={formData.fullName}
                             onChange={handleChange}
                             required
                             className={inputClass}
@@ -198,40 +195,65 @@ export default function ContactForm() {
                           />
                         </div>
                         <div>
-                          <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Preferred Contact Method</label>
+                          <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Branch *</label>
                           <select
-                            name="preferredContactMethod"
-                            value={formData.preferredContactMethod}
+                            name="branch"
+                            value={formData.branch}
                             onChange={handleChange}
+                            required
                             className={inputClass}
                             style={{ fontFamily: "var(--font-body)" }}
                           >
-                            <option value="Phone">Phone</option>
-                            <option value="Email">Email</option>
-                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="Puducherry">Puducherry</option>
+                            <option value="Tindivanam">Tindivanam</option>
                           </select>
                         </div>
                       </div>
 
-                      <div>
-                        <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Subject *</label>
-                        <input
-                          type="text"
-                          name="subject"
-                          value={formData.subject}
-                          onChange={handleChange}
-                          required
-                          className={inputClass}
-                          style={{ fontFamily: "var(--font-body)" }}
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Stay Date *</label>
+                          <input
+                            type="date"
+                            name="stayDate"
+                            value={formData.stayDate}
+                            onChange={handleChange}
+                            required
+                            className={inputClass}
+                            style={{ fontFamily: "var(--font-body)" }}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Rating *</label>
+                          <div className="flex gap-1 h-full items-center pt-2">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => handleRating(star)}
+                                onMouseEnter={() => setHoverRating(star)}
+                                onMouseLeave={() => setHoverRating(0)}
+                                className="focus:outline-none transition-transform hover:scale-110"
+                              >
+                                <Star
+                                  size={24}
+                                  strokeWidth={1}
+                                  className="transition-colors duration-200"
+                                  fill={(hoverRating || formData.rating) >= star ? "#C89B67" : "transparent"}
+                                  color={(hoverRating || formData.rating) >= star ? "#C89B67" : "#E8DDD3"}
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
 
                       <div>
-                        <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Message *</label>
+                        <label className={labelClass} style={{ fontFamily: "var(--font-body)" }}>Feedback *</label>
                         <textarea
-                          name="message"
+                          name="feedback"
                           rows={4}
-                          value={formData.message}
+                          value={formData.feedback}
                           onChange={handleChange}
                           required
                           className={`${inputClass} resize-none`}
@@ -240,7 +262,7 @@ export default function ContactForm() {
                       </div>
 
                       {status === "error" && (
-                        <div className="flex items-center gap-2 text-[#C62828] bg-[#C62828]/5 p-4 rounded-lg">
+                         <div className="flex items-center gap-2 text-[#C62828] bg-[#C62828]/5 p-4 rounded-lg">
                           <AlertCircle size={18} />
                           <span style={{ fontFamily: "var(--font-body)" }} className="text-sm font-medium">{errorMessage}</span>
                         </div>
@@ -257,12 +279,12 @@ export default function ContactForm() {
                         {status === "loading" ? (
                           <>
                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Sending...
+                            Submitting...
                           </>
                         ) : (
                           <>
                             <Send size={16} />
-                            Send Message
+                            Submit Feedback
                           </>
                         )}
                       </motion.button>

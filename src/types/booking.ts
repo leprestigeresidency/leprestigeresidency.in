@@ -8,7 +8,6 @@ export interface Booking {
   guests: number
   totalAmount: number
   status: "pending" | "confirmed" | "cancelled" | "completed"
-  paymentId?: string
   createdAt: string
   updatedAt: string
 }

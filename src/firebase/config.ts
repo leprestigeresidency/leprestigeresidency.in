@@ -18,7 +18,7 @@ const firebaseConfig = {
 const app = firebaseConfig.apiKey !== "YOUR_API_KEY" ? initializeApp(firebaseConfig) : null;
 const auth = app ? getAuth(app) : null;
 const db = app ? getFirestore(app) : null;
-const functions = app ? getFunctions(app, "us-central1") : null;
+const functions = null;
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 

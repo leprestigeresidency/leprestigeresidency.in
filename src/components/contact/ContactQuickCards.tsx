@@ -12,7 +12,7 @@ const cards = [
   {
     title: "EMAIL US",
     detail: "leprestigeresidency@gmail.com",
-    sub: "Reservations & Enquiries",
+    sub: "Reservations & Support",
     action: "Send Email",
     href: "mailto:leprestigeresidency@gmail.com",
   },

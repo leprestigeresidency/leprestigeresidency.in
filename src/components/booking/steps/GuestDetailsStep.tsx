@@ -56,16 +56,9 @@ export default function GuestDetailsStep({ onNext, onBack }: GuestDetailsStepPro
         status: result.status,
       })
       onNext()
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save reservation:", err)
-      // Fallback local result
-      const refNum = `LPR-${Math.floor(100000 + Math.random() * 900000)}`
-      setBookingResult({
-        bookingId: `bk-${Date.now()}`,
-        referenceNumber: refNum,
-        status: "CONFIRMED",
-      })
-      onNext()
+      alert(err.message || "Failed to save reservation. Please try again.")
     } finally {
       setSubmitting(false)
     }

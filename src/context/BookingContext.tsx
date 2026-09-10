@@ -25,6 +25,7 @@ export interface BookingResult {
   bookingId: string
   referenceNumber: string
   status: string
+  totalPrice?: number
 }
 
 interface BookingContextType {

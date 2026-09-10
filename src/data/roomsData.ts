@@ -152,11 +152,11 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
   ],
   tindivanam: [
     {
-      id: "tindi-deluxe",
+      id: "tindi-superior",
       locationId: "tindivanam",
-      name: "Deluxe Room",
-      slug: "deluxe-room",
-      type: "Deluxe",
+      name: "Superior Room",
+      slug: "superior-room",
+      type: "Superior",
       description:
         "Spacious and quiet room designed for highway travelers and vacationers alike, featuring soundproof windows, plush bedding, and modern luxury amenities.",
       pricePerNight: 3800,
@@ -185,13 +185,13 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       status: "Available",
     },
     {
-      id: "tindi-twin",
+      id: "tindi-premium",
       locationId: "tindivanam",
-      name: "Twin Room",
-      slug: "twin-room",
-      type: "Twin",
+      name: "Premium Room",
+      slug: "premium-room",
+      type: "Premium",
       description:
-        "Well-appointed room providing cozy relaxation, study desk, extra legroom, and modern amenities along the Tindivanam route.",
+        "Well-appointed room providing cozy relaxation, extra legroom, and premium amenities along the Tindivanam route.",
       pricePerNight: 3500,
       currency: "INR",
       images: [
@@ -202,7 +202,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
         "/images/tindivanam/tindivanam_corridor.jpg",
       ],
       capacity: 2,
-      bedType: "Twin / Double Bed",
+      bedType: "Queen / Double Bed",
       roomSize: "360 sq.ft",
       amenities: [
         "Comfortable Bedding",
@@ -215,39 +215,6 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       ],
       available: true,
       status: "Available",
-    },
-    {
-      id: "tindi-suite",
-      locationId: "tindivanam",
-      name: "Executive Suite",
-      slug: "executive-suite",
-      type: "Suite",
-      description:
-        "Generously sized executive suite equipped with comfortable lounge seating, dedicated desk setup, mini fridge, and complete amenities.",
-      pricePerNight: 5500,
-      currency: "INR",
-      images: [
-        "/images/tindivanam/tindivanam_lounge.jpg",
-        "/images/tindivanam/tindivanam_room_1.jpg",
-        "/images/tindivanam/tindivanam_room_2.jpg",
-        "/images/tindivanam/tindivanam_desk.jpg",
-        "/images/tindivanam/tindivanam_corridor.jpg",
-      ],
-      capacity: 4,
-      bedType: "King Bed + Lounge",
-      roomSize: "480 sq.ft",
-      amenities: [
-        "King Bed + Lounge",
-        "480 sq.ft",
-        "4 Guests",
-        "Free Wi-Fi",
-        "50\" Smart TV",
-        "Complimentary Breakfast",
-        "Mini Fridge",
-        "24/7 Room Service",
-      ],
-      available: true,
-      status: "Available",
-    },
+    }
   ],
 }

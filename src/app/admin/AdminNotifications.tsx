@@ -109,7 +109,7 @@ export default function AdminNotifications() {
           <div className="p-12 text-center text-slate-400 bg-slate-50 border-2 border-dashed border-slate-200 m-6 rounded-xl">
             <Bell size={40} className="mx-auto mb-3 text-slate-300" />
             <p className="font-semibold text-slate-600">No notifications available</p>
-            <p className="text-xs text-slate-400 mt-1">New reservation events and payment activities will trigger alerts here.</p>
+            <p className="text-xs text-slate-400 mt-1">New reservation events will trigger alerts here.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">

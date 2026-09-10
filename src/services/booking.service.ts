@@ -35,6 +35,7 @@ export interface CreateBookingResponse {
   bookingId: string;
   referenceNumber: string;
   status: string;
+  totalPrice?: number;
 }
 
 export class BookingService {
@@ -48,14 +49,13 @@ export class BookingService {
         const res = await checkFn(params);
         return res.data;
       } catch (error) {
-        console.warn("Cloud function checkAvailability unavailable, falling back to local verification:", error);
+        console.error("Cloud function checkAvailability failed:", error);
+        throw new Error("Failed to check room availability.");
       }
     }
 
-    return {
-      available: true,
-      availableCount: 3,
-    };
+    // Fallback: Assume available if functions are disabled
+    return { available: true, availableCount: 5, message: "Availability fallback active." };
   }
 
   /**
@@ -81,7 +81,8 @@ export class BookingService {
         const res = await createFn({ ...params, branch: normalizedBranch });
         return res.data;
       } catch (error) {
-        console.warn("Cloud function createBooking failed, attempting direct Firestore save:", error);
+        console.error("Cloud function createBooking failed:", error);
+        throw new Error("Failed to create booking through backend.");
       }
     }
 
@@ -94,7 +95,6 @@ export class BookingService {
           branch: normalizedBranch,
           referenceNumber: refNum,
           status: "CONFIRMED",
-          paymentStatus: "PAID",
           total: params.roomType === "Suite" ? 4499 : params.roomType === "Twin" ? 2799 : 2199,
           createdAt: serverTimestamp(),
         };
@@ -115,17 +115,21 @@ export class BookingService {
           read: false,
           createdAt: serverTimestamp(),
         }).catch((e) => console.warn("Notification write warning:", e));
+        
+        return {
+          success: true,
+          bookingId: docId,
+          referenceNumber: refNum,
+          status: "CONFIRMED",
+          totalPrice: bookingRecord.total,
+        };
 
       } catch (err) {
-        console.warn("Direct Firestore booking write error:", err);
+        console.error("Direct Firestore booking write error:", err);
+        throw new Error("Failed to save booking to database.");
       }
     }
 
-    return {
-      success: true,
-      bookingId: docId,
-      referenceNumber: refNum,
-      status: "CONFIRMED",
-    };
+    throw new Error("Backend connection is required to create a booking.");
   }
 }
