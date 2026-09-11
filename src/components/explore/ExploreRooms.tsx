@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 import FadeUp from "@/components/animations/FadeUp"
+import { useLivePrices } from "@/hooks/useLivePrices"
 
 const rooms = [
   {
@@ -20,6 +21,8 @@ const rooms = [
 ]
 
 export default function ExploreRooms() {
+  const { livePrices } = useLivePrices();
+
   return (
     <section className="py-24 md:py-32 bg-[#1A1A1A] relative overflow-hidden">
       {/* Dark Luxury Overlay */}
@@ -75,12 +78,16 @@ export default function ExploreRooms() {
                   <div className="flex flex-col sm:flex-row gap-4 mb-10">
                     <div className="flex-1 bg-[#F8F4EE] border border-[var(--lp-border)] rounded-2xl p-6 text-center">
                       <p className="text-[var(--lp-muted)] text-xs uppercase tracking-widest font-semibold mb-2">Weekdays</p>
-                      <p className="text-2xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>{room.weekdays}</p>
+                      <p className="text-2xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+                        ₹{livePrices[`pondicherry_${room.name.split(' ')[0].toLowerCase()}`] || livePrices[`tindivanam_${room.name.split(' ')[0].toLowerCase()}`] || room.weekdays.replace('₹', '')}
+                      </p>
                       <p className="text-[#a3988b] text-[10px] uppercase tracking-wider">per night</p>
                     </div>
                     <div className="flex-1 bg-[#F8F4EE] border border-[var(--lp-border)] rounded-2xl p-6 text-center">
                       <p className="text-[var(--lp-muted)] text-xs uppercase tracking-widest font-semibold mb-2">Weekends</p>
-                      <p className="text-2xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>{room.weekends}</p>
+                      <p className="text-2xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>
+                        ₹{(livePrices[`pondicherry_${room.name.split(' ')[0].toLowerCase()}`] || livePrices[`tindivanam_${room.name.split(' ')[0].toLowerCase()}`] || parseInt(room.weekdays.replace('₹', ''))) + 500}
+                      </p>
                       <p className="text-[#a3988b] text-[10px] uppercase tracking-wider">per night</p>
                     </div>
                   </div>

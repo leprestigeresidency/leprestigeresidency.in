@@ -152,7 +152,7 @@ export default function AdminLayout() {
   const title = path && headerTitleMap[path] ? headerTitleMap[path] : "Dashboard";
 
   return (
-    <div className="flex w-full min-h-screen bg-slate-50 font-sans text-slate-900 m-0 p-0 absolute inset-0 z-40 overflow-hidden">
+    <div data-lenis-prevent className="flex w-full min-h-screen bg-slate-50 font-sans text-slate-900 m-0 p-0 absolute inset-0 z-40 overflow-hidden">
       
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -349,7 +349,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Scrollable Page Content */}
-        <div className="flex-1 overflow-auto p-4 sm:p-6 md:p-8 z-10 relative">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 md:p-8 z-10 relative">
           <div className="mx-auto max-w-7xl">
             <Outlet context={{ adminData }} />
           </div>

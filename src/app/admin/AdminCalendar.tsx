@@ -27,6 +27,9 @@ export default function AdminCalendar() {
       snapshot.forEach(doc => rData.push({ id: doc.id, ...doc.data() }));
       rData.sort((a, b) => (a.roomNumber || "").localeCompare(b.roomNumber || "", undefined, { numeric: true }));
       setRooms(rData);
+    }, (error) => {
+      console.error("Calendar Rooms error:", error);
+      setLoading(false);
     });
 
     // Fetch branch bookings
@@ -38,6 +41,9 @@ export default function AdminCalendar() {
       const bData: any[] = [];
       snapshot.forEach(doc => bData.push({ id: doc.id, ...doc.data() }));
       setBookings(bData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Calendar Bookings error:", error);
       setLoading(false);
     });
 
@@ -88,13 +94,16 @@ export default function AdminCalendar() {
   };
 
   const getBookingForRoomAndDate = (roomNameOrType: string, date: Date) => {
-    const targetTime = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    // Generate a reliable YYYY-MM-DD string for the target local date
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const targetDateStr = `${year}-${month}-${day}`;
     
     return bookings.find(b => {
-      const checkInTime = new Date(b.checkIn).getTime();
-      const checkOutTime = new Date(b.checkOut).getTime();
+      if (!b.checkIn || !b.checkOut) return false;
       const matchesRoom = b.roomType === roomNameOrType || b.roomNumber === roomNameOrType;
-      const isWithinStay = targetTime >= checkInTime && targetTime < checkOutTime;
+      const isWithinStay = targetDateStr >= b.checkIn && targetDateStr < b.checkOut;
       return matchesRoom && isWithinStay;
     });
   };

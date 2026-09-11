@@ -10,6 +10,7 @@ export default function AdminGuests() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [toastMsg, setToastMsg] = useState("");
+  const [selectedGuest, setSelectedGuest] = useState<any | null>(null);
 
   useEffect(() => {
     if (!db || !adminData?.branchId) return;
@@ -164,7 +165,7 @@ export default function AdminGuests() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); handleAction(`Exported history for ${g.name}`); }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedGuest(g); }}
                       className="text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg transition-colors"
                     >
                       View Profile
@@ -181,6 +182,72 @@ export default function AdminGuests() {
           <span>Filtered by {adminData?.branchId}</span>
         </div>
       </div>
+
+      {/* Guest Profile Modal */}
+      {selectedGuest && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedGuest(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="bg-slate-50 border-b border-slate-200 p-6 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold text-xl flex items-center justify-center shadow-inner">
+                  {selectedGuest.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900 leading-tight">{selectedGuest.name}</h3>
+                  <div className="text-xs font-medium text-slate-500 mt-1 flex gap-2 items-center">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                      selectedGuest.totalStays >= 5 ? "bg-purple-100 text-purple-700" :
+                      selectedGuest.totalStays >= 2 ? "bg-blue-100 text-blue-700" :
+                      "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      {selectedGuest.totalStays >= 5 ? "VIP Platinum" : selectedGuest.totalStays >= 2 ? "Repeat Guest" : "New Guest"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedGuest(null)} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-700 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contact Details</p>
+                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-2 mt-2"><Mail size={14} className="text-blue-500" /> {selectedGuest.email}</p>
+                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-2 mt-2"><Phone size={14} className="text-green-500" /> {selectedGuest.phone}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Lifetime Value</p>
+                  <p className="text-2xl font-black text-slate-900">₹{selectedGuest.totalSpent.toLocaleString("en-IN")}</p>
+                  <p className="text-xs font-semibold text-slate-500 mt-1">Across {selectedGuest.totalStays} {selectedGuest.totalStays === 1 ? "Stay" : "Stays"}</p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Stay History Overview</p>
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <div className="flex justify-between items-center p-4 bg-white hover:bg-slate-50 transition border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex flex-col items-center justify-center">
+                        <Calendar size={14} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">Last Stay Recorded</p>
+                        <p className="text-xs text-slate-500 font-medium">{selectedGuest.lastStay || "Recent"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50 border-t border-slate-200 p-4 px-6 flex justify-end gap-3">
+              <a href={`tel:${selectedGuest.phone}`} className="px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50">Call Guest</a>
+              <a href={`https://wa.me/${selectedGuest.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-green-600 text-white text-sm font-bold rounded-lg hover:bg-green-700 shadow-sm flex items-center gap-2">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

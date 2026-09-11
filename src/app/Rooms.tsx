@@ -13,8 +13,7 @@ import BookingFlowManager from "@/components/booking/BookingFlowManager"
 import RoomDetailModal from "@/components/rooms/RoomDetailModal"
 import RoomsLocationSection from "@/components/rooms/RoomsLocationSection"
 import { LOCATIONS, ROOMS_BY_LOCATION, RoomData, LocationData } from "@/data/roomsData"
-import { db } from "@/firebase/config"
-import { collection, onSnapshot } from "firebase/firestore"
+import { useLivePrices } from "@/hooks/useLivePrices"
 
 export default function Rooms() {
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
@@ -22,7 +21,7 @@ export default function Rooms() {
   const [activeLocationId, setActiveLocationId] = useState<string>("pondicherry")
   const [detailModalOpen, setDetailModalOpen] = useState(false)
   const [selectedDetailRoom, setSelectedDetailRoom] = useState<RoomData | null>(null)
-  const [liveAvailability, setLiveAvailability] = useState<Record<string, boolean>>({})
+  const { livePrices, liveAvailability } = useLivePrices()
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -43,24 +42,6 @@ export default function Rooms() {
     }
   }, [location.search])
 
-  // Listen to Firestore for real-time room availability
-  useEffect(() => {
-    if (!db) return
-    const unsubscribe = onSnapshot(collection(db, "rooms"), (snapshot) => {
-      const availabilityMap: Record<string, boolean> = {}
-      snapshot.forEach((doc) => {
-        const data = doc.data()
-        // We map database room 'type' (e.g. 'Deluxe') to its real-time availability
-        if (data.type) {
-          // If we have multiple rooms of same type, it's available if ANY is available
-          // For this setup, we just use the first matching one or combine them
-          availabilityMap[data.type] = data.available !== false && data.status !== 'occupied'
-        }
-      })
-      setLiveAvailability(availabilityMap)
-    })
-    return () => unsubscribe()
-  }, [])
 
   const currentLocation: LocationData = LOCATIONS[activeLocationId] || LOCATIONS.pondicherry
   const currentRooms: RoomData[] = ROOMS_BY_LOCATION[activeLocationId] || ROOMS_BY_LOCATION.pondicherry
@@ -73,13 +54,14 @@ export default function Rooms() {
 
   const handleBook = (type: RoomType) => {
     const roomMatch = currentRooms.find((r) => r.type === type) || currentRooms[0]
+    const livePrice = livePrices[`${currentLocation.id}_${roomMatch.type.toLowerCase()}`] || roomMatch.pricePerNight
     setSelectedRoom(type)
     updateBooking({
       branch: currentLocation.name,
       roomType: type,
       roomId: roomMatch.id,
       roomName: roomMatch.name,
-      pricePerNight: roomMatch.pricePerNight,
+      pricePerNight: livePrice,
     })
     setBookingModalOpen(true)
   }
@@ -91,12 +73,13 @@ export default function Rooms() {
   }
 
   const handleBookFromModal = (room: RoomData) => {
+    const livePrice = livePrices[`${currentLocation.id}_${room.type.toLowerCase()}`] || room.pricePerNight
     updateBooking({
       branch: currentLocation.name,
       roomType: room.type,
       roomId: room.id,
       roomName: room.name,
-      pricePerNight: room.pricePerNight,
+      pricePerNight: livePrice,
     })
     setSelectedRoom(room.type)
     setBookingModalOpen(true)
@@ -109,10 +92,11 @@ export default function Rooms() {
 
       {/* Rooms Cards */}
       {currentRooms.map((room, index) => {
-        // Override static available with real-time db available if fetched
-        const isLiveAvailable = liveAvailability[room.type] !== undefined 
-          ? liveAvailability[room.type] 
+        const isLiveAvailable = liveAvailability[`${currentLocation.id}_${room.type.toLowerCase()}`] !== undefined 
+          ? liveAvailability[`${currentLocation.id}_${room.type.toLowerCase()}`] 
           : room.available
+
+        const livePrice = livePrices[`${currentLocation.id}_${room.type.toLowerCase()}`] || room.pricePerNight
 
         return (
           <RoomHorizontalCard 
@@ -129,7 +113,7 @@ export default function Rooms() {
               room.roomSize, 
               ...(room.amenities.slice(0, 8))
             ]}
-            pricing={{ weekdays: room.pricePerNight, weekends: room.pricePerNight + 500 }}
+            pricing={{ weekdays: livePrice, weekends: livePrice + 500 }}
             available={isLiveAvailable}
             reverse={index % 2 !== 0}
             onBook={handleBook}

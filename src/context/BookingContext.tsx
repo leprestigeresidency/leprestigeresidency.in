@@ -7,6 +7,7 @@ export interface BookingData {
   roomId?: string
   roomType: RoomType
   roomName?: string
+  pricePerNight?: number
   checkIn: Date | null
   checkOut: Date | null
   adults: number

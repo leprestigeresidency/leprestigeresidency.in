@@ -4,19 +4,23 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LeadService, TouristLeadPayload } from "@/services/lead.service";
 import { getTodayDateString, getMinCheckOutDateString } from "@/utils/dateHelpers";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { useLivePrices } from "@/hooks/useLivePrices";
 
 export default function TouristForm() {
   const navigate = useNavigate();
   const today = getTodayDateString();
+  const { livePrices } = useLivePrices();
+  const liveBasePrice = livePrices["pondicherry_deluxe"] || 2500;
 
-  const [formData, setFormData] = useState<Omit<TouristLeadPayload, "source">>({
+  const [formData, setFormData] = useState<Omit<TouristLeadPayload, "source"> & { captcha: boolean }>({
     name: "",
     phone: "",
     checkIn: today,
     checkOut: getMinCheckOutDateString(today),
     guests: "2 Guests",
     roomPreference: "No preference",
+    captcha: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,10 +30,11 @@ export default function TouristForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target as HTMLInputElement;
+    const checked = (e.target as HTMLInputElement).checked;
 
     setFormData((prev) => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: type === 'checkbox' ? checked : value };
 
       // If checkIn changes, adjust checkOut if checkOut <= checkIn
       if (name === "checkIn") {
@@ -40,7 +45,6 @@ export default function TouristForm() {
       return updated;
     });
 
-    // Clear error for field being edited
     if (errors[name]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -54,9 +58,7 @@ export default function TouristForm() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Full name is required";
-    }
+    if (!formData.name.trim()) newErrors.name = "Full name is required";
 
     const cleanPhone = formData.phone.replace(/[\s-]/g, "");
     if (!cleanPhone) {
@@ -65,25 +67,15 @@ export default function TouristForm() {
       newErrors.phone = "Please enter a valid 10-digit phone number";
     }
 
-    if (!formData.checkIn) {
-      newErrors.checkIn = "Check-in date is required";
-    } else if (formData.checkIn < today) {
-      newErrors.checkIn = "Check-in date cannot be in the past";
-    }
+    if (!formData.checkIn) newErrors.checkIn = "Check-in date is required";
+    else if (formData.checkIn < today) newErrors.checkIn = "Check-in date cannot be in the past";
 
-    if (!formData.checkOut) {
-      newErrors.checkOut = "Check-out date is required";
-    } else if (formData.checkOut <= formData.checkIn) {
-      newErrors.checkOut = "Check-out date must be after check-in date";
-    }
+    if (!formData.checkOut) newErrors.checkOut = "Check-out date is required";
+    else if (formData.checkOut <= formData.checkIn) newErrors.checkOut = "Check-out date must be after check-in date";
 
-    if (!formData.guests) {
-      newErrors.guests = "Please select number of guests";
-    }
-
-    if (!formData.roomPreference) {
-      newErrors.roomPreference = "Please select room preference";
-    }
+    if (!formData.guests) newErrors.guests = "Please select number of guests";
+    if (!formData.roomPreference) newErrors.roomPreference = "Please select room preference";
+    if (!formData.captcha) newErrors.captcha = "Please verify you are not a robot";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -92,10 +84,7 @@ export default function TouristForm() {
   // Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
@@ -111,50 +100,16 @@ export default function TouristForm() {
       };
 
       await LeadService.submitTouristLead(payload);
-
-      // Navigate ONLY to dedicated thank you page
       navigate("/tourist/thank-you");
     } catch (error) {
       console.error("Form submission error:", error);
-      setErrors({
-        form: "Failed to submit request. Please try again or call us directly.",
-      });
+      setErrors({ form: "Failed to submit request. Please try again or call us directly." });
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="bg-white rounded-2xl p-6 sm:p-8 md:p-10 shadow-xl border border-[#E5DED5]">
-      {/* Form Title & Context */}
-      <div className="mb-8 text-center sm:text-left">
-        <span className="inline-block px-3 py-1 bg-[#F3EEE7] text-[#C45A37] font-sans text-xs font-semibold uppercase tracking-widest rounded-full mb-3">
-          Quick Availability Check
-        </span>
-        <h3 className="font-serif text-2xl sm:text-3xl font-semibold text-[#262626] mb-2">
-          Reserve Your Room
-        </h3>
-        <p className="font-sans text-sm text-[#575757]">
-          Tell us your dates. We'll sort the room and confirm availability within hours.
-        </p>
-      </div>
-
-      {/* Reassurance Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 p-4 bg-[#F8F4EE] rounded-xl text-xs font-sans text-[#262626]">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#C45A37] shrink-0" />
-          <span>Held on request</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#C45A37] shrink-0" />
-          <span>Confirmed in hours</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#C45A37] shrink-0" />
-          <span>No obligation</span>
-        </div>
-      </div>
-
-      {/* Form Error Banner */}
       {errors.form && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-500" />
@@ -163,7 +118,6 @@ export default function TouristForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        {/* Name & Phone */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-xs font-sans font-semibold uppercase tracking-wider text-[#262626] mb-2">
@@ -174,19 +128,11 @@ export default function TouristForm() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="e.g. Rahul Sharma"
-              className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] placeholder-[#8C8C8C] focus:outline-none transition-all ${
-                errors.name
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+              className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
+                errors.name ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             />
-            {errors.name && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.name}</span>
-              </p>
-            )}
+            {errors.name && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.name}</p>}
           </div>
 
           <div>
@@ -198,23 +144,14 @@ export default function TouristForm() {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="e.g. 9876543210"
-              className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] placeholder-[#8C8C8C] focus:outline-none transition-all ${
-                errors.phone
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+              className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
+                errors.phone ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             />
-            {errors.phone && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.phone}</span>
-              </p>
-            )}
+            {errors.phone && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.phone}</p>}
           </div>
         </div>
 
-        {/* Check-in & Check-out */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-xs font-sans font-semibold uppercase tracking-wider text-[#262626] mb-2">
@@ -227,17 +164,10 @@ export default function TouristForm() {
               value={formData.checkIn}
               onChange={handleChange}
               className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
-                errors.checkIn
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+                errors.checkIn ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             />
-            {errors.checkIn && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.checkIn}</span>
-              </p>
-            )}
+            {errors.checkIn && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.checkIn}</p>}
           </div>
 
           <div>
@@ -251,21 +181,13 @@ export default function TouristForm() {
               value={formData.checkOut}
               onChange={handleChange}
               className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
-                errors.checkOut
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+                errors.checkOut ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             />
-            {errors.checkOut && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.checkOut}</span>
-              </p>
-            )}
+            {errors.checkOut && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.checkOut}</p>}
           </div>
         </div>
 
-        {/* Guests & Room Preference */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block text-xs font-sans font-semibold uppercase tracking-wider text-[#262626] mb-2">
@@ -276,9 +198,7 @@ export default function TouristForm() {
               value={formData.guests}
               onChange={handleChange}
               className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
-                errors.guests
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+                errors.guests ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             >
               <option value="1 Guest">1 Guest</option>
@@ -286,12 +206,7 @@ export default function TouristForm() {
               <option value="3 Guests">3 Guests</option>
               <option value="4+ Guests">4+ Guests / Family</option>
             </select>
-            {errors.guests && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.guests}</span>
-              </p>
-            )}
+            {errors.guests && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.guests}</p>}
           </div>
 
           <div>
@@ -303,44 +218,45 @@ export default function TouristForm() {
               value={formData.roomPreference}
               onChange={handleChange}
               className={`w-full px-4 py-3 text-sm font-sans rounded-xl bg-[#F8F4EE] border text-[#262626] focus:outline-none transition-all ${
-                errors.roomPreference
-                  ? "border-red-500 focus:ring-2 focus:ring-red-200"
-                  : "border-[#E5DED5] focus:border-[#C45A37] focus:ring-2 focus:ring-[#C45A37]/10"
+                errors.roomPreference ? "border-red-500" : "border-[#E5DED5] focus:border-[#C45A37]"
               }`}
             >
               <option value="No preference">No preference</option>
-              <option value="Deluxe Room">Deluxe Room (₹3,000/night)</option>
-              <option value="Family Room">Family Room</option>
-              <option value="Suite">Suite</option>
+              <option value="Deluxe">Deluxe</option>
+              <option value="Twin">Twin</option>
             </select>
-            {errors.roomPreference && (
-              <p className="mt-1.5 text-xs text-red-600 font-sans flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{errors.roomPreference}</span>
-              </p>
-            )}
+            {errors.roomPreference && <p className="mt-1.5 text-xs text-red-600 font-sans">{errors.roomPreference}</p>}
           </div>
         </div>
+
+        <div className="flex items-center gap-2 pt-2">
+          <input
+            type="checkbox"
+            name="captcha"
+            id="captcha"
+            checked={formData.captcha}
+            onChange={handleChange}
+            className="w-4 h-4 text-[#C45A37] border-gray-300 rounded focus:ring-[#C45A37]"
+          />
+          <label htmlFor="captcha" className="text-sm text-[#262626] font-semibold">I'm not a robot <span className="text-[#C45A37]">*</span></label>
+        </div>
+        {errors.captcha && <p className="mt-1 text-xs text-red-600 font-sans">{errors.captcha}</p>}
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-4 px-6 text-sm font-sans font-bold uppercase tracking-wider text-white bg-[#C45A37] hover:bg-[#B24F30] disabled:bg-[#C45A37]/60 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+          className="w-full py-4 px-6 text-sm font-sans font-bold uppercase tracking-wider text-white bg-[#C45A37] hover:bg-[#B24F30] border-t border-[#B24F30]/20 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-baseline justify-center gap-2 cursor-pointer disabled:opacity-80"
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin relative top-1" />
               <span>Checking Availability...</span>
             </>
           ) : (
-            <span>Check Availability & Lock Rate</span>
+            <span>Check Availability &rarr; </span>
           )}
         </button>
-
-        <p className="text-[11px] font-sans text-center text-[#8C8C8C] leading-relaxed">
-          🔒 Weekend dates fill fast. Enquiries are confidential and backed by 100% host guarantee.
-        </p>
       </form>
     </div>
   );

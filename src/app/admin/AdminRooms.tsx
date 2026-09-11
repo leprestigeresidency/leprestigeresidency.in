@@ -10,6 +10,7 @@ export default function AdminRooms() {
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingPrice, setEditingPrice] = useState<{ id: string; val: string } | null>(null);
   const [newRoom, setNewRoom] = useState({
     roomNumber: "",
     name: "",
@@ -215,7 +216,46 @@ export default function AdminRooms() {
                 <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] text-slate-400 uppercase font-bold block">Base Rate</span>
-                    <span className="text-base font-bold text-slate-900">₹{r.basePrice ? r.basePrice.toLocaleString("en-IN") : "3,000"} <span className="text-xs font-normal text-slate-400">/ night</span></span>
+                    {editingPrice?.id === r.id ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-slate-500 font-bold">₹</span>
+                        <input
+                          type="number"
+                          autoFocus
+                          value={editingPrice?.val || ""}
+                          onChange={(e) => setEditingPrice({ id: editingPrice!.id, val: e.target.value })}
+                          className="w-20 px-2 py-1 text-sm border-2 border-blue-400 rounded-md outline-none"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!db || !editingPrice) return;
+                            try {
+                              await updateDoc(doc(db, "rooms", r.id), { basePrice: Number(editingPrice.val) });
+                              setEditingPrice(null);
+                              showToast("Room price updated successfully!");
+                            } catch (error) {
+                              showToast("Failed to update price");
+                            }
+                          }}
+                          className="p-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200"
+                        >
+                          <CheckCircle2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => setEditingPrice(null)}
+                          className="p-1 bg-rose-100 text-rose-700 rounded-md hover:bg-rose-200"
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 group cursor-pointer" onClick={() => setEditingPrice({ id: r.id, val: (r.basePrice || 3000).toString() })}>
+                        <span className="text-base font-bold text-slate-900">₹{r.basePrice ? r.basePrice.toLocaleString("en-IN") : "3,000"} <span className="text-xs font-normal text-slate-400">/ night</span></span>
+                        <div className="hidden group-hover:flex p-1 bg-slate-100 text-slate-500 rounded-md hover:text-blue-600 transition-colors">
+                          <Edit3 size={12} />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { db } from "@/firebase/config";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { Users, BedDouble, CalendarCheck, Megaphone, Keyboard, CheckCircle2 } from "lucide-react";
+import { collection, query, where, onSnapshot, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { Users, BedDouble, CalendarCheck, Megaphone, Keyboard, Trash2 } from "lucide-react";
 
 export default function AdminDashboard() {
   const { adminData } = useOutletContext<any>();
@@ -49,6 +49,8 @@ export default function AdminDashboard() {
         roomsOccupied: occupied,
         occupancyRate: occupancy,
       }));
+    }, (error) => {
+      console.error("Dashboard Rooms error:", error);
     });
 
     // 2. Bookings
@@ -56,7 +58,14 @@ export default function AdminDashboard() {
       let tBookings = 0;
       let checkIns = 0;
       let checkOuts = 0;
-      const todayStr = new Date().toISOString().split("T")[0]; 
+      
+      // Use local timezone formatting (YYYY-MM-DD) instead of UTC toISOString() 
+      // which causes a 5.5 hour lag in IST resulting in missed "Today's" bookings.
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
 
       let allBookings: any[] = [];
 
@@ -120,12 +129,32 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       
-      {/* Date Filter */}
-      <div className="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
+      {/* Date Filter & Actions */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        
+        <button 
+          onClick={async () => {
+             if (window.confirm("PRE-LAUNCH WIPE:\nAre you absolutely sure you want to permanently delete ALL test bookings and leads?")) {
+               try {
+                 const bookingsObj = await getDocs(collection(db!, "bookings"));
+                 const leadsObj = await getDocs(collection(db!, "landing_leads"));
+                 bookingsObj.forEach(d => deleteDoc(doc(db!, "bookings", d.id)));
+                 leadsObj.forEach(d => deleteDoc(doc(db!, "landing_leads", d.id)));
+                 alert("✅ Setup complete! All test data wiped.");
+               } catch(e: any) {
+                 alert("Wipe error: " + e.message);
+               }
+             }
+          }}
+          className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors"
+        >
+          <Trash2 size={16} /> Wipe All Test Data
+        </button>
+
         <select 
           value={dateFilter}
           onChange={(e) => setDateFilter(e.target.value)}
-          className="bg-white border border-[#E2E8F0] text-[#0F172A] p-2 rounded-lg text-sm font-semibold shadow-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 cursor-pointer"
+          className="bg-white border border-[#E2E8F0] text-[#0F172A] p-2 rounded-lg text-sm font-semibold shadow-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 cursor-pointer w-full sm:w-auto"
         >
           <option>Today</option>
           <option>Yesterday</option>
