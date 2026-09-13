@@ -119,14 +119,9 @@ export default function RoomHorizontalCard({
 
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <div className="flex-1 bg-white border border-[var(--lp-border)] rounded-2xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-                <p className="text-[var(--lp-body)] text-xs uppercase tracking-widest font-semibold mb-2">Weekdays</p>
+                <p className="text-[var(--lp-body)] text-xs uppercase tracking-widest font-semibold mb-2">Price per night</p>
                 <p className="text-3xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>₹{pricing.weekdays.toLocaleString()}</p>
-                <p className="text-[#a3988b] text-[10px] uppercase tracking-wider">per night</p>
-              </div>
-              <div className="flex-1 bg-white border border-[var(--lp-border)] rounded-2xl p-6 text-center hover:shadow-lg transition-shadow duration-300">
-                <p className="text-[var(--lp-body)] text-xs uppercase tracking-widest font-semibold mb-2">Weekends</p>
-                <p className="text-3xl text-[var(--lp-heading)] font-semibold mb-1" style={{ fontFamily: "var(--font-heading)" }}>₹{pricing.weekends.toLocaleString()}</p>
-                <p className="text-[#a3988b] text-[10px] uppercase tracking-wider">per night</p>
+                <p className="text-[#a3988b] text-[10px] uppercase tracking-wider">Taxes extra</p>
               </div>
             </div>
 

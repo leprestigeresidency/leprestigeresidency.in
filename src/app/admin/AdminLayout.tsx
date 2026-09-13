@@ -15,7 +15,8 @@ import {
   LogOut,
   Search,
   Menu,
-  X
+  X,
+  IndianRupee
 } from "lucide-react";
 
 export default function AdminLayout() {
@@ -216,6 +217,7 @@ export default function AdminLayout() {
                 <NavItem to="/admin/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
                 <NavItem to="/admin/bookings" icon={<CalendarCheck size={20} />} label="Bookings" />
                 <NavItem to="/admin/calendar" icon={<CalendarDays size={20} />} label="Calendar" />
+                <NavItem to="/admin/room-prices" icon={<IndianRupee size={20} />} label="Room Prices" />
                 <NavItem to="/admin/rooms" icon={<BedDouble size={20} />} label="Rooms" />
                 <NavItem to="/admin/guests" icon={<Users size={20} />} label="Guests" />
               </div>

@@ -8,8 +8,8 @@ export const ROOMS: Room[] = [
     name: "Deluxe Room",
     type: "deluxe",
     count: 20,
-    weekdayPrice: 3000,
-    weekendPrice: 3500,
+    weekdayPrice: 2500,
+    weekendPrice: 2500,
     image: "/images/Delux room.jpeg",
     description:
       "Spacious and elegantly appointed rooms with premium furnishings, designed for the discerning traveller seeking comfort and style.",
@@ -28,8 +28,8 @@ export const ROOMS: Room[] = [
     name: "Twin Room",
     type: "twin",
     count: 2,
-    weekdayPrice: 3500,
-    weekendPrice: 4000,
+    weekdayPrice: 300,
+    weekendPrice: 300,
     image: "/images/Twin bed.jpeg",
     description:
       "Thoughtfully designed twin rooms perfect for two guests, offering all the luxury of Le Prestige in an intimate, well-curated space.",

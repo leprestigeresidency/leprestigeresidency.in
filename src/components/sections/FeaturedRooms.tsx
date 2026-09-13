@@ -7,9 +7,10 @@ import SectionHeading from "@/components/common/SectionHeading"
 import RoomCard from "@/components/cards/RoomCard"
 import FadeUp from "@/components/animations/FadeUp"
 import { ROOMS } from "@/data/rooms"
+import { useLivePrices } from "@/hooks/useLivePrices"
 
 export default function FeaturedRooms() {
-  const [pricing, setPricing] = useState<"weekday" | "weekend">("weekday")
+  const { livePrices } = useLivePrices();
 
   return (
     <section
@@ -32,43 +33,11 @@ export default function FeaturedRooms() {
             }}
           >
             <SectionHeading eyebrow="Accommodations" title="Luxury Rooms" />
-
-            {/* Filter toggle */}
-            <div
-              style={{
-                display: "flex",
-                border: "1px solid var(--lp-border)",
-                overflow: "hidden",
-              }}
-            >
-              {(["weekday", "weekend"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setPricing(f)}
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontWeight: 600,
-                    fontSize: 12,
-                    letterSpacing: "0.1em",
-                    textTransform: "capitalize",
-                    padding: "10px 24px",
-                    border: "none",
-                    cursor: "pointer",
-                    background:
-                      pricing === f ? "var(--lp-accent)" : "transparent",
-                    color:
-                      pricing === f ? "#fff" : "var(--lp-muted)",
-                    transition: "all 0.25s",
-                  }}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
           </div>
         </FadeUp>
 
         <motion.div
+  
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -79,9 +48,13 @@ export default function FeaturedRooms() {
             gap: 32,
           }}
         >
-          {ROOMS.map((room) => (
-            <RoomCard key={room.id} room={room} pricing={pricing} />
-          ))}
+          {ROOMS.map((room) => {
+            const docId = `pondicherry_${room.type.toLowerCase()}`;
+            const livePrice = livePrices[docId] || room.weekdayPrice;
+            const updatedRoom = { ...room, weekdayPrice: livePrice };
+            
+            return <RoomCard key={room.id} room={updatedRoom} pricing="weekday" />
+          })}
         </motion.div>
       </div>
     </section>

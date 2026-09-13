@@ -7,6 +7,8 @@ export interface Branch {
   description: string
   address?: string
   phone?: string
+  email?: string
+  landline?: string
 }
 
 export const BRANCHES: Branch[] = [
@@ -25,6 +27,10 @@ export const BRANCHES: Branch[] = [
     tag: "Second Branch",
     description:
       "Our second branch in Tindivanam — delivering the same quiet luxury and premium stay experience.",
+    address: "No. 15/1B, Indhra Nagar, Marakanam Road, Tindivanam, Villupuram, Tamil Nadu",
+    phone: "7200651329",
+    email: "leprestigeresidency1@gmail.com",
+    landline: "0414 7251329",
   },
 ]
 

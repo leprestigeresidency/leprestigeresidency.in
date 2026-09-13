@@ -116,7 +116,7 @@ export default function RoomCard({ room, pricing }: RoomCardProps) {
                   textTransform: "capitalize",
                 }}
               >
-                {pricing} rate
+                Nightly rate
               </p>
               <p
                 style={{

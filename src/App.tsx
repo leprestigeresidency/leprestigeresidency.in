@@ -27,6 +27,7 @@ const AdminLayout = lazy(() => import("@/app/admin/AdminLayout"))
 const AdminDashboard = lazy(() => import("@/app/admin/AdminDashboard"))
 const AdminBookings = lazy(() => import("@/app/admin/AdminBookings"))
 const AdminCalendar = lazy(() => import("@/app/admin/AdminCalendar"))
+const AdminRoomPrices = lazy(() => import("@/app/admin/AdminRoomPrices"))
 const AdminRooms = lazy(() => import("@/app/admin/AdminRooms"))
 const AdminGuests = lazy(() => import("@/app/admin/AdminGuests"))
 const AdminNotifications = lazy(() => import("@/app/admin/AdminNotifications"))
@@ -141,6 +142,7 @@ export default function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="calendar" element={<AdminCalendar />} />
+            <Route path="room-prices" element={<AdminRoomPrices />} />
             <Route path="rooms" element={<AdminRooms />} />
             <Route path="guests" element={<AdminGuests />} />
             <Route path="notifications" element={<AdminNotifications />} />

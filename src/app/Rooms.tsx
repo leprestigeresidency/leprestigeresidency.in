@@ -113,7 +113,7 @@ export default function Rooms() {
               room.roomSize, 
               ...(room.amenities.slice(0, 8))
             ]}
-            pricing={{ weekdays: livePrice, weekends: livePrice + 500 }}
+            pricing={{ weekdays: livePrice, weekends: livePrice }}
             available={isLiveAvailable}
             reverse={index % 2 !== 0}
             onBook={handleBook}

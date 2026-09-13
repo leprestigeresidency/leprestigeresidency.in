@@ -76,12 +76,34 @@ export default function ContactLocations() {
                   )}
 
                   {branch.phone && (
-                    <div className="mb-8">
+                    <div className="mb-4">
                       <h4 className="text-[#1F1F1F] text-xs font-bold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-body)" }}>
-                        Phone
+                        Mobile
                       </h4>
                       <a href={`tel:${branch.phone.replace(/[\s-]/g, "")}`} className="text-[#B98A5C] text-sm hover:underline" style={{ fontFamily: "var(--font-body)" }}>
                         {branch.phone}
+                      </a>
+                    </div>
+                  )}
+
+                  {branch.landline && (
+                    <div className="mb-4">
+                      <h4 className="text-[#1F1F1F] text-xs font-bold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-body)" }}>
+                        Landline
+                      </h4>
+                      <a href={`tel:${branch.landline.replace(/[\s-]/g, "")}`} className="text-[#B98A5C] text-sm hover:underline" style={{ fontFamily: "var(--font-body)" }}>
+                        {branch.landline}
+                      </a>
+                    </div>
+                  )}
+
+                  {branch.email && (
+                    <div className="mb-8">
+                      <h4 className="text-[#1F1F1F] text-xs font-bold uppercase tracking-widest mb-2" style={{ fontFamily: "var(--font-body)" }}>
+                        Email
+                      </h4>
+                      <a href={`mailto:${branch.email}`} className="text-[#B98A5C] text-sm hover:underline" style={{ fontFamily: "var(--font-body)" }}>
+                        {branch.email}
                       </a>
                     </div>
                   )}

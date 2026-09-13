@@ -59,7 +59,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       type: "Deluxe",
       description:
         "Designed for guests seeking comfort and elegance, the Deluxe Room offers a spacious king-size bed, contemporary interiors, premium furnishings, complimentary Wi-Fi, smart TV, work desk, wardrobe, modern bathroom, and personalised hospitality.",
-      pricePerNight: 4500,
+      pricePerNight: 2500,
       currency: "INR",
       images: [
         "/images/Delux room.jpeg",
@@ -92,7 +92,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       type: "Twin",
       description:
         "Perfect for friends, families, and business travellers. Twin Rooms feature two comfortable single beds with modern interiors and premium amenities throughout.",
-      pricePerNight: 4000,
+      pricePerNight: 300,
       currency: "INR",
       images: [
         "/images/Twin bed.jpeg",
@@ -117,38 +117,6 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       available: true,
       status: "Available",
     },
-    {
-      id: "pondy-suite",
-      locationId: "pondicherry",
-      name: "Executive Suite",
-      slug: "executive-suite",
-      type: "Suite",
-      description:
-        "Our top-tier executive suite featuring a separate lounge area, city balcony views, luxury bath setup, and dedicated concierge service for an unforgettable stay.",
-      pricePerNight: 6500,
-      currency: "INR",
-      images: [
-        "/images/Delux room.jpeg",
-        "/images/Twin bed.jpeg",
-        "/images/hero/hero-hotel.jpg",
-      ],
-      capacity: 3,
-      bedType: "King Bed + Lounge",
-      roomSize: "450 sq.ft",
-      amenities: [
-        "King Size Bed",
-        "450 sq.ft",
-        "3 Guests",
-        "Separate Living Area",
-        "Complimentary Breakfast & Drinks",
-        "Free Wi-Fi",
-        "55\" Smart TV",
-        "Premium Bathrobe & Slippers",
-        "24/7 Room Service",
-      ],
-      available: true,
-      status: "Available",
-    },
   ],
   tindivanam: [
     {
@@ -159,7 +127,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       type: "Superior",
       description:
         "Spacious and quiet room designed for highway travelers and vacationers alike, featuring soundproof windows, plush bedding, and modern luxury amenities.",
-      pricePerNight: 3800,
+      pricePerNight: 1900,
       currency: "INR",
       images: [
         "/images/tindivanam/tindivanam_room_1.jpg",
@@ -172,6 +140,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       bedType: "King Bed",
       roomSize: "320 sq.ft",
       amenities: [
+        "Total rooms: 12",
         "King Bed",
         "320 sq.ft",
         "Soundproof Windows",
@@ -192,7 +161,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       type: "Premium",
       description:
         "Well-appointed room providing cozy relaxation, extra legroom, and premium amenities along the Tindivanam route.",
-      pricePerNight: 3500,
+      pricePerNight: 2300,
       currency: "INR",
       images: [
         "/images/tindivanam/tindivanam_room_2.jpg",
@@ -205,6 +174,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       bedType: "Queen / Double Bed",
       roomSize: "360 sq.ft",
       amenities: [
+        "Total rooms: 5",
         "Comfortable Bedding",
         "360 sq.ft",
         "Complimentary Breakfast",

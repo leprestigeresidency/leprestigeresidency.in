@@ -13,7 +13,7 @@ import { db } from "@/firebase/config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export interface TouristLeadPayload {
-  source: "Tourist Landing Page";
+  source: "Tourist Landing Page" | "Business Landing Page";
   name: string;
   phone: string;
   checkIn: string;

@@ -221,7 +221,7 @@ export default function AdminCalendar() {
             <tbody className="divide-y divide-slate-100">
               {rooms.length === 0 ? (
                 // Fallback default categories if no room collection records exist yet
-                ["Deluxe King", "Twin Special", "Executive Suite", "Family Suite"].map((roomType, rIdx) => (
+                ["Deluxe King", "Twin Special"].map((roomType, rIdx) => (
                   <tr key={rIdx}>
                     <td className="px-6 py-4 font-bold text-slate-900 sticky left-0 bg-white z-10 border-r border-slate-200 flex items-center gap-2">
                       <BedDouble size={16} className="text-blue-600" />
