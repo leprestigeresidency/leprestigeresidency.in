@@ -2,8 +2,9 @@ import { motion } from "framer-motion"
 import { useBooking } from "@/context/BookingContext"
 import { useAuth } from "@/context/AuthContext"
 import { BookingService } from "@/services/booking.service"
-import { User, Mail, Phone, MapPin, ArrowLeft, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { User, Mail, Phone, MapPin, ArrowLeft, Loader2, AlertCircle } from "lucide-react"
+import { useEffect, useState, useRef } from "react"
+import { Captcha, CaptchaHandle } from "@/components/ui/Captcha"
 
 interface GuestDetailsStepProps {
   onNext: () => void
@@ -14,6 +15,9 @@ export default function GuestDetailsStep({ onNext, onBack }: GuestDetailsStepPro
   const { bookingData, guestDetails, updateGuest, setBookingResult } = useBooking()
   const { user } = useAuth()
   const [submitting, setSubmitting] = useState(false)
+  const captchaRef = useRef<CaptchaHandle>(null)
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false)
+  const [errorLabel, setErrorLabel] = useState("")
   
   const [formData, setFormData] = useState({
     fullName: guestDetails.fullName || user?.displayName || "",
@@ -35,6 +39,13 @@ export default function GuestDetailsStep({ onNext, onBack }: GuestDetailsStepPro
   // Submit reservation and save to Firestore
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!isCaptchaValid) {
+      setErrorLabel("Please complete the CAPTCHA correctly to proceed.")
+      return
+    }
+    
+    setErrorLabel("")
     setSubmitting(true)
     updateGuest(formData)
 
@@ -55,6 +66,8 @@ export default function GuestDetailsStep({ onNext, onBack }: GuestDetailsStepPro
         referenceNumber: result.referenceNumber,
         status: result.status,
       })
+      captchaRef.current?.reset()
+      setIsCaptchaValid(false)
       onNext()
     } catch (err: any) {
       console.error("Failed to save reservation:", err)
@@ -136,6 +149,22 @@ export default function GuestDetailsStep({ onNext, onBack }: GuestDetailsStepPro
             />
           </div>
         </div>
+        
+        {errorLabel && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
+            <AlertCircle size={18} className="shrink-0 text-red-500" />
+            <span>{errorLabel}</span>
+          </div>
+        )}
+
+        <Captcha 
+          ref={captchaRef}
+          onValidate={(valid) => {
+            setIsCaptchaValid(valid)
+            if (valid) setErrorLabel("")
+          }}
+          error={errorLabel ? "Invalid CAPTCHA" : ""}
+        />
 
         <div className="mt-auto pt-6 sticky bottom-0 bg-[#F8F4EE] pb-2 z-10 flex justify-between items-center border-t border-[var(--lp-border)]/50 mt-8">
           <p className="text-xs text-[var(--lp-muted)] hidden sm:block">* Your reservation request will be saved directly</p>

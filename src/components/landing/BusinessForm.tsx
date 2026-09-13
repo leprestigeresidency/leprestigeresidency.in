@@ -5,19 +5,23 @@ import { useNavigate } from "react-router-dom";
 import { LeadService, TouristLeadPayload } from "@/services/lead.service";
 import { getTodayDateString, getMinCheckOutDateString } from "@/utils/dateHelpers";
 import { Loader2, AlertCircle } from "lucide-react";
+import { Captcha, CaptchaHandle } from "@/components/ui/Captcha";
+import { useRef } from "react";
 
 export default function BusinessForm() {
   const navigate = useNavigate();
   const today = getTodayDateString();
 
-  const [formData, setFormData] = useState<Omit<TouristLeadPayload, "source"> & { captcha: boolean }>({
+  const captchaRef = useRef<CaptchaHandle>(null);
+  const [isCaptchaValid, setIsCaptchaValid] = useState(false);
+
+  const [formData, setFormData] = useState<Omit<TouristLeadPayload, "source">>({
     name: "",
     phone: "",
     checkIn: today,
     checkOut: getMinCheckOutDateString(today),
     guests: "1 Guest",
     roomPreference: "No preference",
-    captcha: false,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -72,7 +76,7 @@ export default function BusinessForm() {
 
     if (!formData.guests) newErrors.guests = "Please select number of guests";
     if (!formData.roomPreference) newErrors.roomPreference = "Please select room preference";
-    if (!formData.captcha) newErrors.captcha = "Please verify you are not a robot";
+    if (!isCaptchaValid) newErrors.captcha = "Please complete the CAPTCHA correctly";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -97,6 +101,8 @@ export default function BusinessForm() {
       };
 
       await LeadService.submitTouristLead(payload);
+      captchaRef.current?.reset();
+      setIsCaptchaValid(false);
       navigate("/business/thank-you");
     } catch (error) {
       console.error("Form submission error:", error);
@@ -226,18 +232,16 @@ export default function BusinessForm() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pt-2">
-          <input
-            type="checkbox"
-            name="captcha"
-            id="captcha"
-            checked={formData.captcha}
-            onChange={handleChange}
-            className="w-4 h-4 text-[#0284C7] border-gray-300 rounded focus:ring-[#0284C7]"
-          />
-          <label htmlFor="captcha" className="text-sm text-[#262626] font-semibold">I'm not a robot <span className="text-[#0284C7]">*</span></label>
-        </div>
-        {errors.captcha && <p className="mt-1 text-xs text-red-600 font-sans">{errors.captcha}</p>}
+        <Captcha 
+          ref={captchaRef}
+          onValidate={(valid) => {
+            setIsCaptchaValid(valid);
+            if (valid && errors.captcha) {
+               setErrors(prev => { const n = {...prev}; delete n.captcha; return n; });
+            }
+          }}
+          error={errors.captcha}
+        />
 
         {/* Submit Button */}
         <button
