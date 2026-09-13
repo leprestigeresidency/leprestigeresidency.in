@@ -91,21 +91,26 @@ export default function AdminLogin() {
 
       // Attempt optional Firebase Auth sync without blocking UI
       if (auth) {
-        const effectiveEmail = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@leprestige.com`;
+        let firebaseEmail = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@leprestige.com`;
+        let firebasePass = cleanPassword;
+        
+        // Ensure preset admins sign into a valid Firebase account to prevent permission errors
+        if (isPresetAdmin && (validPondyPass || validTindivanamPass)) {
+          firebaseEmail = "admin@leprestige.com";
+          firebasePass = "Admin123!";
+        }
+
         try {
-          let userCred = await signInWithEmailAndPassword(auth, effectiveEmail, cleanPassword).catch(() => null);
-          if (!userCred && (cleanPassword === "Le@pondy123" || cleanPassword === "Le@tindivanam123")) {
-            userCred = await signInWithEmailAndPassword(auth, effectiveEmail, "Admin123!").catch(() => null);
-          }
+          let userCred = await signInWithEmailAndPassword(auth, firebaseEmail, firebasePass).catch(() => null);
           if (!userCred) {
-            userCred = await createUserWithEmailAndPassword(auth, effectiveEmail, cleanPassword).catch(() => null);
+            userCred = await createUserWithEmailAndPassword(auth, firebaseEmail, firebasePass).catch(() => null);
           }
           if (userCred?.user && db) {
             await setDoc(doc(db, "users", userCred.user.uid), {
               role: "admin",
               branchId: branch,
               username: cleanUsername,
-              email: effectiveEmail,
+              email: firebaseEmail,
               active: true
             }, { merge: true }).catch(() => {});
           }

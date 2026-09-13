@@ -68,7 +68,8 @@ export default function Rooms() {
 
   const handleViewDetailsByType = (type: RoomType) => {
     const roomMatch = currentRooms.find((r) => r.type === type) || currentRooms[0]
-    setSelectedDetailRoom(roomMatch)
+    const livePrice = livePrices[`${currentLocation.id}_${roomMatch.type.toLowerCase()}`] || roomMatch.pricePerNight
+    setSelectedDetailRoom({ ...roomMatch, pricePerNight: livePrice })
     setDetailModalOpen(true)
   }
 

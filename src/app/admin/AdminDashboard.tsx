@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { db } from "@/firebase/config";
-import { collection, query, where, onSnapshot, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { Users, BedDouble, CalendarCheck, Megaphone, Keyboard, Trash2 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -138,11 +138,19 @@ export default function AdminDashboard() {
                try {
                  const bookingsObj = await getDocs(collection(db!, "bookings"));
                  const leadsObj = await getDocs(collection(db!, "landing_leads"));
+                 // Get all rooms to reset their status
+                 const roomsObj = await getDocs(collection(db!, "rooms"));
+                 
                  bookingsObj.forEach(d => deleteDoc(doc(db!, "bookings", d.id)));
                  leadsObj.forEach(d => deleteDoc(doc(db!, "landing_leads", d.id)));
+                 roomsObj.forEach(d => {
+                   if (d.data().status !== "Available") {
+                     updateDoc(doc(db!, "rooms", d.id), { status: "Available" });
+                   }
+                 });
                  alert("✅ Setup complete! All test data wiped.");
                } catch(e: any) {
-                 alert("Wipe error: " + e.message);
+                 alert("Wipe error: " + e.message + "\n\nTry logging out and logging back in if permissions are denied.");
                }
              }
           }}

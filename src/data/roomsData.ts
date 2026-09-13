@@ -92,7 +92,7 @@ export const ROOMS_BY_LOCATION: Record<string, RoomData[]> = {
       type: "Twin",
       description:
         "Perfect for friends, families, and business travellers. Twin Rooms feature two comfortable single beds with modern interiors and premium amenities throughout.",
-      pricePerNight: 300,
+      pricePerNight: 3000,
       currency: "INR",
       images: [
         "/images/Twin bed.jpeg",
