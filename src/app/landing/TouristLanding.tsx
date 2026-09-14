@@ -88,7 +88,7 @@ export default function TouristLanding() {
 
           {/* Swipeable Carousel */}
           <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 no-scrollbar hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <img src="/images/bed.jpeg" alt="Bed shot" className="w-[85vw] sm:w-[400px] h-[300px] object-cover rounded-2xl snap-center shrink-0 border border-[#E5DED5]" onError={(e) => { e.currentTarget.src = "/images/Delux room.jpeg" }} />
+            <img src="/images/landing_hero_bed.png" alt="Bed shot" className="w-[85vw] sm:w-[400px] h-[300px] object-cover rounded-2xl snap-center shrink-0 border border-[#E5DED5]" onError={(e) => { e.currentTarget.src = "/images/Delux room.jpeg" }} />
             <img src="/images/room.jpeg" alt="Wide room shot" className="w-[85vw] sm:w-[400px] h-[300px] object-cover rounded-2xl snap-center shrink-0 border border-[#E5DED5]" />
             <img src="/images/bathroom .jpeg" alt="Bathroom" className="w-[85vw] sm:w-[400px] h-[300px] object-cover rounded-2xl snap-center shrink-0 border border-[#E5DED5]" />
             <img src="/images/balcony.jpeg" alt="Window/Lights" className="w-[85vw] sm:w-[400px] h-[300px] object-cover rounded-2xl snap-center shrink-0 border border-[#E5DED5]" />
@@ -169,9 +169,14 @@ export default function TouristLanding() {
               <div className="bg-[#262626] p-6 rounded-2xl text-white space-y-4 border border-[#404040]">
                 <h3 className="font-serif text-2xl font-bold text-[#F59E0B]">Book Now — ₹{liveBasePrice.toLocaleString("en-IN")}/night</h3>
                 <p className="text-sm text-white/80">Call or WhatsApp us directly. Booked and confirmed immediately.</p>
-                <div className="flex gap-2">
-                  <a href={`https://wa.me/${HOTEL.phoneRaw}?text=PONDICHERRY`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#4CAF50] hover:bg-[#43A047] py-2 rounded font-bold text-xs">WhatsApp Now</a>
-                  <a href={`tel:${HOTEL.phoneRaw}`} className="flex-1 text-center bg-transparent border border-white hover:bg-white/10 py-2 rounded font-bold text-xs">Call Now</a>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <a href={`https://wa.me/${HOTEL.phoneRaw}?text=PONDICHERRY`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-[#4CAF50] hover:bg-[#43A047] py-2 rounded font-bold text-xs">WhatsApp Now</a>
+                    <a href={`tel:${HOTEL.phoneRaw}`} className="flex-1 text-center bg-transparent border border-white hover:bg-white/10 py-2 rounded font-bold text-xs">Call Now</a>
+                  </div>
+                  <a href="tel:+919384051329" className="w-full text-center bg-transparent border border-white hover:bg-white/10 py-2 rounded font-bold text-xs">
+                    Tele Calling: +91 93840 51329
+                  </a>
                 </div>
               </div>
 
@@ -194,7 +199,10 @@ export default function TouristLanding() {
 
             <div className="text-center pt-2">
               <p className="text-sm text-[#575757]">Have questions before you book? Call us — we're happy to help.</p>
-              <a href={`tel:${HOTEL.phoneRaw}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#262626] border-b-2 border-[#262626] pb-0.5 mt-2 hover:text-[#C45A37] hover:border-[#C45A37] transition-all"><Phone size={14}/> Call Us</a>
+              <div className="flex items-center justify-center gap-6 mt-2">
+                <a href={`tel:${HOTEL.phoneRaw}`} className="inline-flex items-center gap-2 text-sm font-bold text-[#262626] border-b-2 border-[#262626] pb-0.5 hover:text-[#C45A37] hover:border-[#C45A37] transition-all"><Phone size={14}/> Call Us</a>
+                <a href="tel:+919384051329" className="inline-flex items-center gap-2 text-sm font-bold text-[#262626] border-b-2 border-[#262626] pb-0.5 hover:text-[#C45A37] hover:border-[#C45A37] transition-all"><Phone size={14}/> +91 93840 51329</a>
+              </div>
             </div>
           </div>
 
